@@ -1,0 +1,27 @@
+{
+  "name": "web-custom-scripts",
+  "version": "1.0.0",
+  "description": "custom scripts for web",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShareChat/web-custom-scripts.git"
+  },
+  "bin": {
+    "doc": "./bin/docCoverage.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ShareChat/web-custom-scripts/issues"
+  },
+  "homepage": "https://github.com/ShareChat/web-custom-scripts#readme",
+  "dependencies": {
+    "eslint": "^8.2.0",
+    "fs-extra": "^10.0.0",
+    "path": "^0.12.7"
+  }
+}
