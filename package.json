@@ -25,7 +25,6 @@
   "dependencies": {
     "acorn-loose": "^8.2.1",
     "escodegen": "^2.0.0",
-    "eslint": "^8.2.0",
     "fs-extra": "^10.0.0",
     "path": "^0.12.7"
   },

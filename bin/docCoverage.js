@@ -96,16 +96,122 @@ class DocumentationCoverage {
    * @returns {Array}
    * @private
    */
-  static filterAstType(ast) {
-    const allowedDocType = [
-      'FunctionExpression',
-      'ArrowFunctionExpression',
-      'FunctionDeclaration',
-      'VariableDeclaration',
-      'ExportNamedDeclaration',
-      'ExportDefaultDeclaration',
-    ];
-    return ast.body.filter((e) => allowedDocType.includes(e.type));
+  static createHash(ast, filePath) {
+    const functionTypes = ['FunctionExpression', 'ArrowFunctionExpression'];
+
+    const filterDeclarationTypes = (e) => {
+      switch (e.type) {
+        case 'FunctionDeclaration':
+          return {
+            functionName: e.id.name,
+            functionType: e.type,
+            hasLeadingComments:
+              e.leadingComments?.filter((i) => i.value.startsWith('*\n'))
+                .length > 0,
+          };
+        case 'VariableDeclaration':
+        case 'ExportNamedDeclaration':
+        case 'ExportDefaultDeclaration': {
+          let subobj = {};
+
+          if (e.type === 'VariableDeclaration') {
+            subobj = e.declarations?.[0];
+          }
+
+          if (e.type === 'ExportNamedDeclaration') {
+            subobj = e.declaration?.declarations?.[0];
+          }
+
+          if (e.type === 'ExportDefaultDeclaration') {
+            subobj = e.declaration;
+          }
+
+          if (subobj?.init?.type && functionTypes.includes(subobj.init.type)) {
+            return {
+              functionName: subobj.id.name,
+              functionType: e.type,
+              hasLeadingComments:
+                e.leadingComments?.filter((i) => i.value.startsWith('*\n'))
+                  .length > 0,
+            };
+          }
+          return false;
+        }
+
+        default:
+          return false;
+      }
+    };
+
+    const hash = {};
+
+    const fileSplit = filePath.split('/');
+
+    const fileName = `${fileSplit[fileSplit.length - 2]}#${
+      fileSplit[fileSplit.length - 1].split('.')[0]
+    }`;
+
+    let expectedCount = 0;
+    let actualCount = 0;
+
+    for (let i = 0; i < ast.body.length; i += 1) {
+      const e = ast.body[i];
+      const res = filterDeclarationTypes(e);
+      if (res) {
+        if (!hash[fileName]?.funcCoverage) {
+          hash[fileName] = { funcCoverage: {} };
+        }
+
+        hash[fileName] = {
+          funcCoverage: {
+            ...hash[fileName].funcCoverage,
+            [res.functionName]: res.hasLeadingComments,
+          },
+        };
+
+        if (res.hasLeadingComments) {
+          actualCount += 1;
+        }
+
+        expectedCount += 1;
+      }
+    }
+
+    if (Object.keys(hash).length > 0) {
+      hash[fileName] = {
+        ...hash[fileName],
+        fileCoverage: `${this.getCoveragePercentage(
+          actualCount,
+          expectedCount
+        )}%`,
+        filePath,
+      };
+      return hash;
+    }
+    return null;
+  }
+
+  static getCoveragePercentage(actualCount, expectedCount) {
+    return Math.floor((10000 * actualCount) / expectedCount) / 100;
+  }
+
+  static getFunctionCount(response) {
+    let expectedCount = 0;
+    let actualCount = 0;
+
+    Object.keys(response).forEach((property) => {
+      const obj = response[property].funcCoverage;
+      Object.keys(obj).forEach((innerProperty) => {
+        expectedCount += 1;
+        if (obj[innerProperty] === true) {
+          actualCount += 1;
+        }
+      });
+    });
+    return {
+      expectedCount,
+      actualCount,
+    };
   }
 
   /**
@@ -131,11 +237,12 @@ class DocumentationCoverage {
     // attachs comments to ast doc
     escodegen.attachComments(ast, comments, tokens);
 
-    return this.filterAstType(ast);
+    return this.createHash(ast, filePath);
   }
 
   static generateReport(config) {
     const results = [];
+    let astHash = {};
     let actualCount = 0;
     let expectedCount = 0;
     const isExcluded = (filePath) => {
@@ -151,23 +258,27 @@ class DocumentationCoverage {
     this.walk(config.source, (filePath) => {
       if (!isExcluded(filePath)) {
         // generates ast doc
-        const astDoc = this.generateAstDoc(filePath);
+        const response = this.generateAstDoc(filePath);
 
-        const numOfScopes = astDoc.length;
+        if (response) {
+          astHash = {
+            ...astHash,
+            ...response,
+          };
 
-        const numOfDocumentationComments = astDoc.filter(
-          (e) => e.leadingComments && e.leadingComments.length > 0
-        ).length;
-
-        expectedCount += numOfScopes;
-        actualCount += numOfDocumentationComments;
+          const resultObj = this.getFunctionCount(response);
+          expectedCount += resultObj.expectedCount;
+          actualCount += resultObj.actualCount;
+        }
       }
       results.push(filePath);
     });
-    const coveragePercent =
-      expectedCount === 0
-        ? 0
-        : Math.floor((10000 * actualCount) / expectedCount) / 100;
+
+    const coveragePercent = this.getCoveragePercentage(
+      actualCount,
+      expectedCount
+    );
+    console.log(astHash);
     console.log('Total Scopes: ', expectedCount);
     console.log('Documented Scopes: ', actualCount);
     console.log('Coverage Percentage: ', coveragePercent);
@@ -184,7 +295,6 @@ class DocumentationCoverage {
     if (config) {
       this.generateReport(config);
     } else {
-      // this._showHelp(); //TO DO: implement _showHelp
       process.exit(1);
     }
   }
