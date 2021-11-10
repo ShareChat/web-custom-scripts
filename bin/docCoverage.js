@@ -1,9 +1,9 @@
 #! /usr/bin/env node
 
-const fs = require("fs-extra");
-const path = require("path");
-var acornLoose = require("acorn-loose");
-var escodegen = require("escodegen");
+const fs = require('fs-extra');
+const path = require('path');
+const acornLoose = require('acorn-loose');
+const escodegen = require('escodegen');
 
 class DocumentationCoverage {
   /**
@@ -17,17 +17,17 @@ class DocumentationCoverage {
    * @param {function(entryPath: string)} callback - callback for each file.
    * @private
    */
-  static _walk(dirPath, callback) {
-    const entries = fs.readdirSync(dirPath); //gives an array of all files and folders in dirPath
-    for (const entry of entries) {
-      const entryPath = path.resolve(dirPath, entry); //generates complete path (/Users/...) as dirpath(./src) is relative
-      const stat = fs.statSync(entryPath); //has functions which tell if given node is a file or dir
+  static walk(dirPath, callback) {
+    const entries = fs.readdirSync(dirPath);
+    entries.forEach((entry) => {
+      const entryPath = path.resolve(dirPath, entry);
+      const stat = fs.statSync(entryPath);
       if (stat.isFile()) {
         callback(entryPath);
       } else if (stat.isDirectory()) {
-        this._walk(entryPath, callback);
+        this.walk(entryPath, callback);
       }
-    }
+    });
   }
 
   /**
@@ -36,34 +36,17 @@ class DocumentationCoverage {
    * @return {DocCoverageConfig} config object.
    * @private
    */
-  static _createConfigFromJSONFile(configFilePath) {
-    configFilePath = path.resolve(configFilePath);
+  static createConfigFromJSONFile(configFile) {
+    const configFilePath = path.resolve(configFile);
     const ext = path.extname(configFilePath);
-    if (ext === ".js") {
+    if (ext === '.js') {
+      /* eslint-disable global-require */
+      // eslint-disable-next-line import/no-dynamic-require
       return require(configFilePath);
-    } else {
-      const configJSON = fs.readFileSync(configFilePath, { encode: "utf8" });
-      const config = JSON.parse(configJSON);
-      return config;
     }
-  }
-
-  /**
-   * create config object from config file.
-   * @param {string} configFilePath - config file path.
-   * @return {DocCoverageConfig} config object.
-   * @private
-   */
-  static _createConfigFromJSONFile(configFilePath) {
-    configFilePath = path.resolve(configFilePath);
-    const ext = path.extname(configFilePath);
-    if (ext === ".js") {
-      return require(configFilePath);
-    } else {
-      const configJSON = fs.readFileSync(configFilePath, { encode: "utf8" });
-      const config = JSON.parse(configJSON);
-      return config;
-    }
+    const configJSON = fs.readFileSync(configFilePath, { encode: 'utf8' });
+    const config = JSON.parse(configJSON);
+    return config;
   }
 
   /**
@@ -71,10 +54,10 @@ class DocumentationCoverage {
    * @return {DocCoverageConfig|null} config object.
    * @private
    */
-  static _createConfigFromPackageJSON() {
+  static createConfigFromPackageJSON() {
     try {
-      const filePath = path.resolve("./package.json");
-      const packageJSON = fs.readFileSync(filePath, "utf8").toString();
+      const filePath = path.resolve('./package.json');
+      const packageJSON = fs.readFileSync(filePath, 'utf8').toString();
       const packageObj = JSON.parse(packageJSON);
       return packageObj.docCoverage;
     } catch (e) {
@@ -89,9 +72,9 @@ class DocumentationCoverage {
    * @returns {string|null} config file path.
    * @private
    */
-  static _findConfigFilePath() {
+  static findConfigFilePath() {
     try {
-      const filePath = path.resolve("./.doccoverage.json");
+      const filePath = path.resolve('./.doccoverage.json');
       fs.readFileSync(filePath);
       return filePath;
     } catch (e) {
@@ -99,13 +82,12 @@ class DocumentationCoverage {
     }
 
     try {
-      const filePath = path.resolve("./.doccoverage.js");
+      const filePath = path.resolve('./.doccoverage.js');
       fs.readFileSync(filePath);
       return filePath;
     } catch (e) {
       // ignore
     }
-
     return null;
   }
 
@@ -114,14 +96,14 @@ class DocumentationCoverage {
    * @returns {Array}
    * @private
    */
-  static _filterAstType(ast) {
-    let allowedDocType = [
-      "FunctionExpression",
-      "ArrowFunctionExpression",
-      "FunctionDeclaration",
-      "VariableDeclaration",
-      "ExportNamedDeclaration",
-      "ExportDefaultDeclaration",
+  static filterAstType(ast) {
+    const allowedDocType = [
+      'FunctionExpression',
+      'ArrowFunctionExpression',
+      'FunctionDeclaration',
+      'VariableDeclaration',
+      'ExportNamedDeclaration',
+      'ExportDefaultDeclaration',
     ];
     return ast.body.filter((e) => allowedDocType.includes(e.type));
   }
@@ -131,12 +113,12 @@ class DocumentationCoverage {
    * @returns {Object}
    * @private
    */
-  static _generateAstDoc(path) {
-    let file = fs.readFileSync(path, "utf8");
-    var comments = [];
-    var tokens = [];
+  static generateAstDoc(filePath) {
+    const file = fs.readFileSync(filePath, 'utf8');
+    const comments = [];
+    const tokens = [];
 
-    var ast = acornLoose.parse(file, {
+    const ast = acornLoose.parse(file, {
       ecmaVersion: 2020,
       // collect ranges for each node
       ranges: true,
@@ -149,36 +131,36 @@ class DocumentationCoverage {
     // attachs comments to ast doc
     escodegen.attachComments(ast, comments, tokens);
 
-    return this._filterAstType(ast);
+    return this.filterAstType(ast);
   }
 
-  static _generateReport(config) {
-    let results = [];
+  static generateReport(config) {
+    const results = [];
     let actualCount = 0;
     let expectedCount = 0;
-    const isExcluded = (path) => {
+    const isExcluded = (filePath) => {
       if (config.excludedPaths && config.excludedPaths.length > 0) {
-        for (let i = 0; i < config.excludedPaths.length; i++) {
-          if (path.match(config.excludedPaths[i])) {
+        for (let i = 0; i < config.excludedPaths.length; i += 1) {
+          if (filePath.match(config.excludedPaths[i])) {
             return true;
           }
         }
       }
       return false;
     };
-    this._walk(config.source, (filePath) => {
+    this.walk(config.source, (filePath) => {
       if (!isExcluded(filePath)) {
         // generates ast doc
-        let astDoc = this._generateAstDoc(filePath);
+        const astDoc = this.generateAstDoc(filePath);
 
-        const numOfExports = astDoc.length;
+        const numOfScopes = astDoc.length;
 
         const numOfDocumentationComments = astDoc.filter(
           (e) => e.leadingComments && e.leadingComments.length > 0
         ).length;
 
-        expectedCount = expectedCount + numOfExports;
-        actualCount = actualCount + numOfDocumentationComments;
+        expectedCount += numOfScopes;
+        actualCount += numOfDocumentationComments;
       }
       results.push(filePath);
     });
@@ -186,25 +168,25 @@ class DocumentationCoverage {
       expectedCount === 0
         ? 0
         : Math.floor((10000 * actualCount) / expectedCount) / 100;
-    console.log("Total Scopes: " + expectedCount);
-    console.log("Documented Scopes: " + actualCount);
-    console.log("Coverage Percentage: " + coveragePercent);
+    console.log('Total Scopes: ', expectedCount);
+    console.log('Documented Scopes: ', actualCount);
+    console.log('Coverage Percentage: ', coveragePercent);
   }
 
-  static _exec() {
+  static exec() {
     let config;
-    const configPath = this._findConfigFilePath();
+    const configPath = this.findConfigFilePath();
     if (configPath) {
-      config = this._createConfigFromJSONFile(configPath);
+      config = this.createConfigFromJSONFile(configPath);
     } else {
-      config = this._createConfigFromPackageJSON();
+      config = this.createConfigFromPackageJSON();
     }
     if (config) {
-      this._generateReport(config);
+      this.generateReport(config);
     } else {
       // this._showHelp(); //TO DO: implement _showHelp
       process.exit(1);
     }
   }
 }
-DocumentationCoverage._exec();
+DocumentationCoverage.exec();
