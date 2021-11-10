@@ -2,6 +2,8 @@
 
 const fs = require("fs-extra");
 const path = require("path");
+var acornLoose = require("acorn-loose");
+var escodegen = require("escodegen");
 
 class DocumentationCoverage {
   /**
@@ -107,6 +109,49 @@ class DocumentationCoverage {
     return null;
   }
 
+  /**
+   * filter function types.
+   * @returns {Array}
+   * @private
+   */
+  static _filterAstType(ast) {
+    let allowedDocType = [
+      "FunctionExpression",
+      "ArrowFunctionExpression",
+      "FunctionDeclaration",
+      "VariableDeclaration",
+      "ExportNamedDeclaration",
+      "ExportDefaultDeclaration",
+    ];
+    return ast.body.filter((e) => allowedDocType.includes(e.type));
+  }
+
+  /**
+   * generates AST object
+   * @returns {Object}
+   * @private
+   */
+  static _generateAstDoc(path) {
+    let file = fs.readFileSync(path, "utf8");
+    var comments = [];
+    var tokens = [];
+
+    var ast = acornLoose.parse(file, {
+      ecmaVersion: 2020,
+      // collect ranges for each node
+      ranges: true,
+      // collect comments in Esprima's format !imp
+      onComment: comments,
+      // collect token ranges
+      onToken: tokens,
+    });
+
+    // attachs comments to ast doc
+    escodegen.attachComments(ast, comments, tokens);
+
+    return this._filterAstType(ast);
+  }
+
   static _generateReport(config) {
     let results = [];
     let actualCount = 0;
@@ -122,23 +167,18 @@ class DocumentationCoverage {
       return false;
     };
     this._walk(config.source, (filePath) => {
-      console.log(isExcluded(filePath));
       if (!isExcluded(filePath)) {
-        const fileData = fs.readFileSync(filePath, "utf8");
-        const numOfExports = fileData.match(/export /g)?.length;
-        const numOfDocumentationComments =
-          fileData.match(/\/\*\*\s*\n([^\*]|(\*(?!\/)))*\*\//g)?.length ?? 0;
-        expectedCount++;
-        if (fileData.startsWith("/**" && !numOfExports)) {
-          actualCount++;
-        } else if (numOfExports && numOfExports > 0) {
-          expectedCount--;
-          expectedCount += numOfExports;
-          actualCount +=
-            numOfDocumentationComments > numOfExports
-              ? numOfExports
-              : numOfDocumentationComments; //see careerUtils.js
-        }
+        // generates ast doc
+        let astDoc = this._generateAstDoc(filePath);
+
+        const numOfExports = astDoc.length;
+
+        const numOfDocumentationComments = astDoc.filter(
+          (e) => e.leadingComments && e.leadingComments.length > 0
+        ).length;
+
+        expectedCount = expectedCount + numOfExports;
+        actualCount = actualCount + numOfDocumentationComments;
       }
       results.push(filePath);
     });
@@ -162,7 +202,7 @@ class DocumentationCoverage {
     if (config) {
       this._generateReport(config);
     } else {
-      this._showHelp(); //TO DO: implement _showHelp
+      // this._showHelp(); //TO DO: implement _showHelp
       process.exit(1);
     }
   }
