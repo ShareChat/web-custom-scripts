@@ -67,6 +67,29 @@ class DocumentationCoverage {
     return null;
   }
 
+  static generateConsoleTable(expectedCount, actualCount, coveragePercent) {
+    const array = [
+      { myId: 'totalScope', title: 'Total Scopes', value: expectedCount },
+      {
+        myId: 'documentedScopes',
+        title: 'Documented Scopes',
+        value: actualCount,
+      },
+      {
+        myId: 'coveragePercentage',
+        title: 'Coverage Percentage',
+        value: `${coveragePercent}%`,
+      },
+    ];
+
+    const transformed = array.reduce((acc, { myId, ...x }) => {
+      acc[myId] = x;
+      return acc;
+    }, {});
+
+    return transformed;
+  }
+
   /**
    * find config file.
    * @returns {string|null} config file path.
@@ -195,6 +218,32 @@ class DocumentationCoverage {
     return Math.floor((10000 * actualCount) / expectedCount) / 100;
   }
 
+  static generateJsonSummary(
+    astHash,
+    expectedCount,
+    actualCount,
+    coveragePercent
+  ) {
+    const output = {
+      expectedCount,
+      actualCount,
+      coveragePercent: `${coveragePercent}%`,
+      fileWiseCoverage: astHash,
+    };
+
+    const dir = './doc-coverage';
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+
+    fs.writeFile(
+      `${dir}/docCoverageSummary.json`,
+      JSON.stringify(output, null, 4),
+      'utf8'
+    );
+  }
+
   static getFunctionCount(response) {
     let expectedCount = 0;
     let actualCount = 0;
@@ -278,10 +327,28 @@ class DocumentationCoverage {
       actualCount,
       expectedCount
     );
-    console.log(astHash);
-    console.log('Total Scopes: ', expectedCount);
-    console.log('Documented Scopes: ', actualCount);
-    console.log('Coverage Percentage: ', coveragePercent);
+
+    this.generateJsonSummary(
+      astHash,
+      expectedCount,
+      actualCount,
+      coveragePercent
+    );
+
+    const consoleResponse = this.generateConsoleTable(
+      expectedCount,
+      actualCount,
+      coveragePercent
+    );
+
+    console.log(
+      '###########################################################\n'
+    );
+    console.table(consoleResponse);
+    console.log('Note: A detailed json is generated in doc-coverage directory');
+    console.log(
+      '\n###########################################################'
+    );
   }
 
   static exec() {
