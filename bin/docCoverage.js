@@ -67,27 +67,13 @@ class DocumentationCoverage {
     return null;
   }
 
-  static generateConsoleTable(expectedCount, actualCount, coveragePercent) {
-    const array = [
-      { myId: 'totalScope', title: 'Total Scopes', value: expectedCount },
-      {
-        myId: 'documentedScopes',
-        title: 'Documented Scopes',
-        value: actualCount,
-      },
-      {
-        myId: 'coveragePercentage',
-        title: 'Coverage Percentage',
-        value: `${coveragePercent}%`,
-      },
-    ];
-
-    const transformed = array.reduce((acc, { myId, ...x }) => {
+  static generateConsoleTable(title, data) {
+    console.log(`-----------${title}------------`);
+    const transformed = data.reduce((acc, { myId, ...x }) => {
       acc[myId] = x;
       return acc;
     }, {});
-
-    return transformed;
+    console.table(transformed);
   }
 
   /**
@@ -218,16 +204,9 @@ class DocumentationCoverage {
     return Math.floor((10000 * actualCount) / expectedCount) / 100;
   }
 
-  static generateJsonSummary(
-    astHash,
-    expectedCount,
-    actualCount,
-    coveragePercent
-  ) {
+  static generateJsonSummary(astHash, data) {
     const output = {
-      expectedCount,
-      actualCount,
-      coveragePercent: `${coveragePercent}%`,
+      ...data,
       fileWiseCoverage: astHash,
     };
 
@@ -372,27 +351,84 @@ class DocumentationCoverage {
         : Math.floor((10000 * numOfComponentsWithStories) / numOfComponents) /
           100;
 
-    console.log('numOfComponents: ', numOfComponents);
-    console.log('numOfComponentsWithStories: ', numOfComponentsWithStories);
-    console.log('storybook coverage: ', storybookCoveragePercent);
-
-    this.generateJsonSummary(
-      astHash,
-      expectedCount,
-      actualCount,
-      coveragePercent
-    );
-
-    const consoleResponse = this.generateConsoleTable(
-      expectedCount,
-      actualCount,
-      coveragePercent
-    );
+    this.generateJsonSummary(astHash, {
+      jsdocCoverage: {
+        expectedCount,
+        actualCount,
+        coveragePercent,
+      },
+      storyBookCoverage: {
+        numOfComponents,
+        numOfComponentsWithStories,
+        storybookCoveragePercent,
+      },
+      totalCoverage: {
+        totalExpectedCount: numOfComponents + expectedCount,
+        totalActualCount: numOfComponentsWithStories + actualCount,
+        totalCoveragePercent: this.getCoveragePercentage(
+          numOfComponentsWithStories + actualCount,
+          numOfComponents + expectedCount
+        ),
+      },
+    });
 
     console.log(
       '###########################################################\n'
     );
-    console.table(consoleResponse);
+
+    this.generateConsoleTable('JsDoc Coverage', [
+      { myId: 'totalScope', title: 'Total Scopes', value: expectedCount },
+      {
+        myId: 'documentedScopes',
+        title: 'Documented Scopes',
+        value: actualCount,
+      },
+      {
+        myId: 'coveragePercentage',
+        title: 'Coverage Percentage',
+        value: `${coveragePercent}%`,
+      },
+    ]);
+
+    this.generateConsoleTable('Storybook Coverage', [
+      {
+        myId: 'numOfComponents',
+        title: 'Number of Components',
+        value: numOfComponents,
+      },
+      {
+        myId: 'numOfComponentsWithStories',
+        title: 'Components with Stories',
+        value: numOfComponentsWithStories,
+      },
+      {
+        myId: 'storybookCoverage',
+        title: 'Coverage Percentage',
+        value: `${storybookCoveragePercent}%`,
+      },
+    ]);
+
+    this.generateConsoleTable('Total Coverage', [
+      {
+        myId: 'numOfFiles',
+        title: 'Total Scopes',
+        value: numOfComponents + expectedCount,
+      },
+      {
+        myId: 'numOfFilesDocumented',
+        title: 'Documented Scopes',
+        value: numOfComponentsWithStories + actualCount,
+      },
+      {
+        myId: 'storybookCoverage',
+        title: 'Coverage Percentage',
+        value: `${this.getCoveragePercentage(
+          numOfComponentsWithStories + actualCount,
+          numOfComponents + expectedCount
+        )}%`,
+      },
+    ]);
+
     console.log('Note: A detailed json is generated in doc-coverage directory');
     console.log(
       '\n###########################################################'
