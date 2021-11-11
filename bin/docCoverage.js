@@ -243,20 +243,44 @@ class DocumentationCoverage {
   static generateReport(config) {
     const results = [];
     let astHash = {};
+    const componentsMap = {};
     let actualCount = 0;
     let expectedCount = 0;
-    const isExcluded = (filePath) => {
-      if (config.excludedPaths && config.excludedPaths.length > 0) {
-        for (let i = 0; i < config.excludedPaths.length; i += 1) {
-          if (filePath.match(config.excludedPaths[i])) {
+    const isExcluded = (filePath, excludedPaths) => {
+      if (excludedPaths && excludedPaths.length > 0) {
+        for (let i = 0; i < excludedPaths.length; i += 1) {
+          if (filePath.match(excludedPaths[i])) {
             return true;
           }
         }
       }
       return false;
     };
+    const checkStorybookCoverage = (filePath) => {
+      if (filePath.match(/.stories.js/g)) {
+        const fileData = fs.readFileSync(filePath, 'utf8');
+        const lines = fileData.split('\n');
+        const linesWithImports = lines.filter((line) => line.match(/import /));
+
+        for (let i = 0; i < linesWithImports.length; i += 1) {
+          const typeOfQuoteUsed = linesWithImports[i].includes("'") ? "'" : '"';
+          const startIndex = linesWithImports[i].indexOf(typeOfQuoteUsed);
+          const lastIndex = linesWithImports[i].lastIndexOf(typeOfQuoteUsed);
+          const fileAddress = linesWithImports[i].slice(
+            startIndex + 2, // to remove alias @
+            lastIndex
+          );
+          const componentsMapKeys = Object.keys(componentsMap);
+          for (let j = 0; j < componentsMapKeys.length; j += 1) {
+            if (componentsMapKeys[j].match(fileAddress)) {
+              delete componentsMap[componentsMapKeys[j]];
+            }
+          }
+        }
+      }
+    };
     this.walk(config.source, (filePath) => {
-      if (!isExcluded(filePath)) {
+      if (!isExcluded(filePath, config.excludedPaths)) {
         // generates ast doc
         const response = this.generateAstDoc(filePath);
 
@@ -271,6 +295,14 @@ class DocumentationCoverage {
           actualCount += resultObj.actualCount;
         }
       }
+      if (
+        filePath.match(`/${config.componentsFolderName}/`) &&
+        !isExcluded(filePath, config.excludedComponentPathsForStories)
+      ) {
+        componentsMap[filePath] = false;
+      }
+      if (!config.storiesFolderPath || config.storiesFolderPath === '')
+        checkStorybookCoverage(filePath); // if story files are inside src folder
       results.push(filePath);
     });
 
@@ -278,10 +310,24 @@ class DocumentationCoverage {
       actualCount,
       expectedCount
     );
-    console.log(astHash);
+    const numOfComponents = Object.keys(componentsMap).length;
+    this.walk(config.storiesFolderPath, (filePath) => {
+      checkStorybookCoverage(filePath);
+    });
+
+    const numOfComponentsWithStories =
+      numOfComponents - Object.keys(componentsMap).length;
+    const storybookCoveragePercent =
+      numOfComponents === 0
+        ? 0
+        : Math.floor((10000 * numOfComponentsWithStories) / numOfComponents) /
+          100;
     console.log('Total Scopes: ', expectedCount);
     console.log('Documented Scopes: ', actualCount);
     console.log('Coverage Percentage: ', coveragePercent);
+    console.log('numOfComponents: ', numOfComponents);
+    console.log('numOfComponentsWithStories: ', numOfComponentsWithStories);
+    console.log('storybook coverage: ', storybookCoveragePercent);
   }
 
   static exec() {
