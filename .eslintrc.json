@@ -8,8 +8,5 @@
   "parserOptions": {
     "ecmaVersion": 13
   },
-  //   "rules": {
-  //     "prettier/prettier": "error"
-  //   },
   "plugins": ["prettier"]
 }
