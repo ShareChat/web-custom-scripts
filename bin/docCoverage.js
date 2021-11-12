@@ -248,7 +248,7 @@ class DocumentationCoverage {
     const tokens = [];
 
     const ast = acornLoose.parse(file, {
-      ecmaVersion: 2020,
+      ecmaVersion: config.ecmaVersion ?? 2020,
       // collect ranges for each node
       ranges: true,
       // collect comments in Esprima's format !imp
