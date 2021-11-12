@@ -138,6 +138,73 @@ class DocumentationCoverage {
     );
   }
 
+  static printOutputSummary(data) {
+    const { jsdocCoverage, storyBookCoverage, totalCoverage } = data;
+
+    console.log(
+      '###########################################################\n'
+    );
+
+    this.generateConsoleTable('JsDoc Coverage', [
+      {
+        myId: 'totalScope',
+        title: 'Total Scopes',
+        value: jsdocCoverage.expectedCount,
+      },
+      {
+        myId: 'documentedScopes',
+        title: 'Documented Scopes',
+        value: jsdocCoverage.actualCount,
+      },
+      {
+        myId: 'coveragePercentage',
+        title: 'Coverage Percentage',
+        value: `${jsdocCoverage.coveragePercent}%`,
+      },
+    ]);
+
+    this.generateConsoleTable('Storybook Coverage', [
+      {
+        myId: 'numOfComponents',
+        title: 'Number of Components',
+        value: storyBookCoverage.numOfComponents,
+      },
+      {
+        myId: 'numOfComponentsWithStories',
+        title: 'Components with Stories',
+        value: storyBookCoverage.numOfComponentsWithStories,
+      },
+      {
+        myId: 'storybookCoverage',
+        title: 'Coverage Percentage',
+        value: `${storyBookCoverage.storybookCoveragePercent}%`,
+      },
+    ]);
+
+    this.generateConsoleTable('Total Coverage', [
+      {
+        myId: 'numOfFiles',
+        title: 'Total Scopes',
+        value: totalCoverage.totalExpectedCount,
+      },
+      {
+        myId: 'numOfFilesDocumented',
+        title: 'Documented Scopes',
+        value: totalCoverage.totalActualCount,
+      },
+      {
+        myId: 'storybookCoverage',
+        title: 'Coverage Percentage',
+        value: totalCoverage.totalCoveragePercent,
+      },
+    ]);
+
+    console.log('Note: A detailed json is generated in doc-coverage directory');
+    console.log(
+      '\n###########################################################'
+    );
+  }
+
   static getFunctionCount(response) {
     let expectedCount = 0;
     let actualCount = 0;
@@ -267,7 +334,7 @@ class DocumentationCoverage {
         : Math.floor((10000 * numOfComponentsWithStories) / numOfComponents) /
           100;
 
-    this.generateJsonSummary(astHash, {
+    const summary = {
       jsdocCoverage: {
         expectedCount,
         actualCount,
@@ -286,69 +353,11 @@ class DocumentationCoverage {
           numOfComponents + expectedCount
         ),
       },
-    });
+    };
 
-    console.log(
-      '###########################################################\n'
-    );
+    this.generateJsonSummary(astHash, summary);
 
-    this.generateConsoleTable('JsDoc Coverage', [
-      { myId: 'totalScope', title: 'Total Scopes', value: expectedCount },
-      {
-        myId: 'documentedScopes',
-        title: 'Documented Scopes',
-        value: actualCount,
-      },
-      {
-        myId: 'coveragePercentage',
-        title: 'Coverage Percentage',
-        value: `${coveragePercent}%`,
-      },
-    ]);
-
-    this.generateConsoleTable('Storybook Coverage', [
-      {
-        myId: 'numOfComponents',
-        title: 'Number of Components',
-        value: numOfComponents,
-      },
-      {
-        myId: 'numOfComponentsWithStories',
-        title: 'Components with Stories',
-        value: numOfComponentsWithStories,
-      },
-      {
-        myId: 'storybookCoverage',
-        title: 'Coverage Percentage',
-        value: `${storybookCoveragePercent}%`,
-      },
-    ]);
-
-    this.generateConsoleTable('Total Coverage', [
-      {
-        myId: 'numOfFiles',
-        title: 'Total Scopes',
-        value: numOfComponents + expectedCount,
-      },
-      {
-        myId: 'numOfFilesDocumented',
-        title: 'Documented Scopes',
-        value: numOfComponentsWithStories + actualCount,
-      },
-      {
-        myId: 'storybookCoverage',
-        title: 'Coverage Percentage',
-        value: `${this.getCoveragePercentage(
-          numOfComponentsWithStories + actualCount,
-          numOfComponents + expectedCount
-        )}%`,
-      },
-    ]);
-
-    console.log('Note: A detailed json is generated in doc-coverage directory');
-    console.log(
-      '\n###########################################################'
-    );
+    this.printOutputSummary(summary);
   }
 }
 module.exports = DocumentationCoverage;
