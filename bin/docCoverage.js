@@ -7,11 +7,6 @@ const escodegen = require('escodegen');
 
 class DocumentationCoverage {
   /**
-   * Generate documentation.
-   * @param {DocCoverageConfig} config - config for calculation coverage
-   */
-
-  /**
    * walk recursive in directory.
    * @param {string} dirPath - target directory path.
    * @param {function(entryPath: string)} callback - callback for each file.
@@ -325,7 +320,7 @@ class DocumentationCoverage {
       }
       if (
         filePath.match(`/${config.componentsFolderName}/`) &&
-        !isExcluded(filePath, config.excludedComponentPathsForStories)
+        !isExcluded(filePath, config.excludedComponentPaths)
       ) {
         componentsMap[filePath] = false;
       }
