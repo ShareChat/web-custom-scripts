@@ -7,7 +7,6 @@ class DocumentationCoverageCli {
   /**
    * find config file.
    * @returns {string|null} config file path.
-   * @private
    */
   static findConfigFilePath() {
     try {

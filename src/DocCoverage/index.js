@@ -4,17 +4,10 @@ const fs = require('fs-extra');
 const acornLoose = require('acorn-loose');
 const escodegen = require('escodegen');
 const walk = require('../Utils/walk');
+const storybookCoverage = require('./DocCoverageUtils/storybookCoverage');
+const printOutputSummary = require('./DocCoverageUtils/printOutputSummary');
 
 class DocumentationCoverage {
-  static generateConsoleTable(title, data) {
-    console.log(`-----------${title}------------`);
-    const transformed = data.reduce((acc, { myId, ...x }) => {
-      acc[myId] = x;
-      return acc;
-    }, {});
-    console.table(transformed);
-  }
-
   /**
    * filter function types.
    * @returns {Array}
@@ -138,73 +131,6 @@ class DocumentationCoverage {
     );
   }
 
-  static printOutputSummary(data) {
-    const { jsdocCoverage, storyBookCoverage, totalCoverage } = data;
-
-    console.log(
-      '###########################################################\n'
-    );
-
-    this.generateConsoleTable('JsDoc Coverage', [
-      {
-        myId: 'totalScope',
-        title: 'Total Scopes',
-        value: jsdocCoverage.expectedCount,
-      },
-      {
-        myId: 'documentedScopes',
-        title: 'Documented Scopes',
-        value: jsdocCoverage.actualCount,
-      },
-      {
-        myId: 'coveragePercentage',
-        title: 'Coverage Percentage',
-        value: `${jsdocCoverage.coveragePercent}%`,
-      },
-    ]);
-
-    this.generateConsoleTable('Storybook Coverage', [
-      {
-        myId: 'numOfComponents',
-        title: 'Number of Components',
-        value: storyBookCoverage.numOfComponents,
-      },
-      {
-        myId: 'numOfComponentsWithStories',
-        title: 'Components with Stories',
-        value: storyBookCoverage.numOfComponentsWithStories,
-      },
-      {
-        myId: 'storybookCoverage',
-        title: 'Coverage Percentage',
-        value: `${storyBookCoverage.storybookCoveragePercent}%`,
-      },
-    ]);
-
-    this.generateConsoleTable('Total Coverage', [
-      {
-        myId: 'numOfFiles',
-        title: 'Total Scopes',
-        value: totalCoverage.totalExpectedCount,
-      },
-      {
-        myId: 'numOfFilesDocumented',
-        title: 'Documented Scopes',
-        value: totalCoverage.totalActualCount,
-      },
-      {
-        myId: 'storybookCoverage',
-        title: 'Coverage Percentage',
-        value: totalCoverage.totalCoveragePercent,
-      },
-    ]);
-
-    console.log('Note: A detailed json is generated in doc-coverage directory');
-    console.log(
-      '\n###########################################################'
-    );
-  }
-
   static getFunctionCount(response) {
     let expectedCount = 0;
     let actualCount = 0;
@@ -246,14 +172,12 @@ class DocumentationCoverage {
 
     // attachs comments to ast doc
     escodegen.attachComments(ast, comments, tokens);
-
     return this.createHash(ast, filePath);
   }
 
   static generateReport(config) {
     const results = [];
     let astHash = {};
-    const componentsMap = {};
     let actualCount = 0;
     let expectedCount = 0;
     const isExcluded = (filePath, excludedPaths) => {
@@ -266,73 +190,60 @@ class DocumentationCoverage {
       }
       return false;
     };
-    const checkStorybookCoverage = (filePath) => {
-      if (filePath.match(/.stories.js/g)) {
-        const fileData = fs.readFileSync(filePath, 'utf8');
-        const lines = fileData.split('\n');
-        const linesWithImports = lines.filter((line) => line.match(/import /));
 
-        for (let i = 0; i < linesWithImports.length; i += 1) {
-          const typeOfQuoteUsed = linesWithImports[i].includes("'") ? "'" : '"';
-          const startIndex = linesWithImports[i].indexOf(typeOfQuoteUsed);
-          const lastIndex = linesWithImports[i].lastIndexOf(typeOfQuoteUsed);
-          const fileAddress = linesWithImports[i].slice(
-            startIndex + 2, // to remove alias @
-            lastIndex
-          );
-          const componentsMapKeys = Object.keys(componentsMap);
-          for (let j = 0; j < componentsMapKeys.length; j += 1) {
-            if (componentsMapKeys[j].match(fileAddress)) {
-              delete componentsMap[componentsMapKeys[j]];
-            }
-          }
-        }
-      }
-    };
-
+    let componentsMap = {};
+    let totalComponents = 0;
     walk(config.source, (filePath) => {
+      // Find total scopes(expectCount) and documented scopes(actualCount)
       if (!isExcluded(filePath, config.excludedPaths)) {
         // generates ast doc
         const response = this.generateAstDoc(filePath, config);
-
         if (response) {
           astHash = {
             ...astHash,
             ...response,
           };
-
           const resultObj = this.getFunctionCount(response);
           expectedCount += resultObj.expectedCount;
           actualCount += resultObj.actualCount;
         }
       }
+
+      // Populate components Map with all component file paths
       if (
         filePath.match(`/${config.componentsFolderName}/`) &&
         !isExcluded(filePath, config.excludedComponentPaths)
       ) {
         componentsMap[filePath] = false;
       }
+      totalComponents = Object.keys(componentsMap).length;
+
+      // if story files are inside src folder
       if (!config.storiesFolderPath || config.storiesFolderPath === '')
-        checkStorybookCoverage(filePath); // if story files are inside src folder
+        componentsMap = storybookCoverage.removeFilesWithStories(
+          filePath,
+          componentsMap
+        );
       results.push(filePath);
     });
+    walk(config.storiesFolderPath, (filePath) => {
+      componentsMap = storybookCoverage.removeFilesWithStories(
+        filePath,
+        componentsMap
+      );
+    });
+
+    const componentsWithStories =
+      totalComponents - Object.keys(componentsMap).length;
+    const storybookCoveragePercent =
+      totalComponents === 0
+        ? 0
+        : Math.floor((10000 * componentsWithStories) / totalComponents) / 100;
 
     const coveragePercent = this.getCoveragePercentage(
       actualCount,
       expectedCount
     );
-    const numOfComponents = Object.keys(componentsMap).length;
-    walk(config.storiesFolderPath, (filePath) => {
-      checkStorybookCoverage(filePath);
-    });
-
-    const numOfComponentsWithStories =
-      numOfComponents - Object.keys(componentsMap).length;
-    const storybookCoveragePercent =
-      numOfComponents === 0
-        ? 0
-        : Math.floor((10000 * numOfComponentsWithStories) / numOfComponents) /
-          100;
 
     const summary = {
       jsdocCoverage: {
@@ -341,23 +252,22 @@ class DocumentationCoverage {
         coveragePercent,
       },
       storyBookCoverage: {
-        numOfComponents,
-        numOfComponentsWithStories,
+        totalComponents,
+        componentsWithStories,
         storybookCoveragePercent,
       },
       totalCoverage: {
-        totalExpectedCount: numOfComponents + expectedCount,
-        totalActualCount: numOfComponentsWithStories + actualCount,
+        totalExpectedCount: totalComponents + expectedCount,
+        totalActualCount: componentsWithStories + actualCount,
         totalCoveragePercent: this.getCoveragePercentage(
-          numOfComponentsWithStories + actualCount,
-          numOfComponents + expectedCount
+          componentsWithStories + actualCount,
+          totalComponents + expectedCount
         ),
       },
     };
 
     this.generateJsonSummary(astHash, summary);
-
-    this.printOutputSummary(summary);
+    printOutputSummary(summary);
   }
 }
 module.exports = DocumentationCoverage;
