@@ -6,6 +6,7 @@ const escodegen = require('escodegen');
 const walk = require('../Utils/walk');
 const storybookCoverage = require('./DocCoverageUtils/storybookCoverage');
 const printOutputSummary = require('./DocCoverageUtils/printOutputSummary');
+const PropTypesCoverage = require('./DocCoverageUtils/propTypesCoverage');
 
 class DocumentationCoverage {
   /**
@@ -155,7 +156,23 @@ class DocumentationCoverage {
    * @returns {Object}
    * @private
    */
-  static generateAstDoc(filePath, config) {
+  static generateAst(filePath, config) {
+    const file = fs.readFileSync(filePath, 'utf8');
+    const comments = [];
+    const tokens = [];
+    const ast = acornLoose.parse(file, {
+      ecmaVersion: config.ecmaVersion ?? 'latest',
+      // collect ranges for each node
+      ranges: true,
+      // collect comments in Esprima's format !imp
+      onComment: comments,
+      // collect token ranges
+      onToken: tokens,
+    });
+    return ast;
+  }
+
+  static generateReportDoc(filePath, config) {
     const file = fs.readFileSync(filePath, 'utf8');
     const comments = [];
     const tokens = [];
@@ -193,11 +210,12 @@ class DocumentationCoverage {
 
     let componentsMap = {};
     let totalComponents = 0;
+
     walk(config.source, (filePath) => {
       // Find total scopes(expectCount) and documented scopes(actualCount)
       if (!isExcluded(filePath, config.excludedPaths)) {
         // generates ast doc
-        const response = this.generateAstDoc(filePath, config);
+        const response = this.generateReportDoc(filePath, config);
         if (response) {
           astHash = {
             ...astHash,
@@ -214,16 +232,22 @@ class DocumentationCoverage {
         filePath.match(`/${config.componentsFolderName}/`) &&
         !isExcluded(filePath, config.excludedComponentPaths)
       ) {
-        componentsMap[filePath] = false;
+        const response = JSON.parse(
+          JSON.stringify(this.generateAst(filePath, config))
+        );
+        const missingProps =
+          PropTypesCoverage.PropTypesCoverageClassComponents(response);
+        componentsMap[filePath] = missingProps.length === 0;
       }
       totalComponents = Object.keys(componentsMap).length;
 
       // if story files are inside src folder
-      if (!config.storiesFolderPath || config.storiesFolderPath === '')
+      if (!config.storiesFolderPath || config.storiesFolderPath === '') {
         componentsMap = storybookCoverage.removeFilesWithStories(
           filePath,
           componentsMap
         );
+      }
       results.push(filePath);
     });
     walk(config.storiesFolderPath, (filePath) => {
@@ -232,13 +256,17 @@ class DocumentationCoverage {
         componentsMap
       );
     });
-
     const componentsWithStories =
       totalComponents - Object.keys(componentsMap).length;
+    const componentsWithStoriesOrPropTypes =
+      totalComponents - Object.values(componentsMap).filter((v) => v).length;
+    console.log(componentsWithStoriesOrPropTypes);
     const storybookCoveragePercent =
       totalComponents === 0
         ? 0
-        : Math.floor((10000 * componentsWithStories) / totalComponents) / 100;
+        : Math.floor(
+            (10000 * componentsWithStoriesOrPropTypes) / totalComponents
+          ) / 100;
 
     const coveragePercent = this.getCoveragePercentage(
       actualCount,
@@ -253,14 +281,14 @@ class DocumentationCoverage {
       },
       storyBookCoverage: {
         totalComponents,
-        componentsWithStories,
+        componentsWithStoriesOrPropTypes,
         storybookCoveragePercent,
       },
       totalCoverage: {
         totalExpectedCount: totalComponents + expectedCount,
-        totalActualCount: componentsWithStories + actualCount,
+        totalActualCount: componentsWithStoriesOrPropTypes + actualCount,
         totalCoveragePercent: this.getCoveragePercentage(
-          componentsWithStories + actualCount,
+          componentsWithStoriesOrPropTypes + actualCount,
           totalComponents + expectedCount
         ),
       },

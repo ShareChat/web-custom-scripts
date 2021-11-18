@@ -39,7 +39,7 @@ const printOutputSummary = (data) => {
     {
       myId: 'componentsWithStories',
       title: 'Components with Stories',
-      value: storyBookCoverage.componentsWithStories,
+      value: storyBookCoverage.componentsWithStoriesOrPropTypes,
     },
     {
       myId: 'storybookCoverage',
