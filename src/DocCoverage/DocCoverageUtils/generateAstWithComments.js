@@ -33,20 +33,21 @@ const createHash = (ast, filePath) => {
         }
 
         if (e.type === 'ExportNamedDeclaration') {
-          subobj = e.declaration?.declarations?.[0];
-          if (
-            filePath === '/Users/shivanisehgal/Desktop/pwa-moj/src/api/index.js'
-          ) {
-            console.log('hash');
-            console.log(subobj);
+          if (e.declaration?.declarations) {
+            subobj = e.declaration?.declarations?.[0];
+          } else if (e.declaration) {
+            subobj = e.declaration;
           }
         }
 
-        if (e.type === 'ExportDefaultDeclaration') {
+        if (e.type === 'ExportDefaultDeclaration' && e.id) {
           subobj = e.declaration;
         }
 
-        if (subobj?.init?.type && functionTypes.includes(subobj.init.type)) {
+        if (
+          (subobj?.init?.type && functionTypes.includes(subobj.init.type)) ||
+          subobj.type === 'FunctionDeclaration'
+        ) {
           return {
             functionName: subobj.id.name,
             functionType: e.type,
