@@ -73,7 +73,6 @@ If no config is provided, the following is used as the default config
 
 ```
 
-```
 
 ## Sample Results
 
