@@ -1,101 +1,144 @@
-// const fs = require('fs-extra');
-
-const getParentAndGrandParent = (path, json, value, cb) => {
-  Object.entries(json).forEach(([key, val]) => {
-    if (typeof val === 'object' && !Array.isArray(val) && val !== null) {
-      path.push({ [key]: val });
-      getParentAndGrandParent(path, val, value, cb);
-      path.pop();
-    } else if (Array.isArray(val) && key !== 'params' && key !== 'arguments') {
-      val.forEach((v, i) => {
-        if (typeof v === 'object') {
-          path.push({ [`${key}[${i}]`]: v });
-          getParentAndGrandParent(path, v, value, cb);
-          path.pop();
-        }
-      });
-    } else if (val === value) {
-      const final = path.slice(-3);
-      cb(final);
-    }
-  });
-};
+const getAncestors = require('./getAncestors');
 
 class PropTypesCoverage {
   /**
-   * if a component is imported in stories, remove it from componentsMap.
-   * @returns {object} new components map
+   * finds missing prop types.
+   * @param {object} ast
+   * @returns {Array} missingPropTypes
    */
-
-  static PropTypesCoverageClassComponents(ast) {
-    // console.log(JSON.parse(JSON.stringify(ast)));
+  static getMissingPropTypes(ast) {
+    let hasPropTypes = false;
     const propsArr = [];
     const propTypesArr = [];
-    const populatePropsArray = ([grandParentObject, parentObject]) => {
-      const grandParentValue = Object.values(grandParentObject)[0];
+    let isClassComponent = false;
+    const uniquePush = (arr, item) => {
+      if (item && !arr.includes(item)) {
+        arr.push(item);
+      }
+    };
 
-      const parentKey = Object.keys(parentObject)[0];
+    /**
+     * callback function to be passed in getAncestors
+     * finds all props used in a Class based component and populates them in the propsArr
+     * @param {Array} ancestors
+     */
+    const populatePropsArray = ([
+      greatGrandParentObject,
+      grandParentObject,
+    ]) => {
+      // for simplicity calling them grandParent and parent
+      const grandParentValue = Object.values(greatGrandParentObject)[0];
+      const parentKey = Object.keys(grandParentObject)[0];
+
       if (parentKey === 'init') {
-        if (
-          grandParentValue.id.name &&
-          !propsArr.includes(grandParentValue.id.name)
-        ) {
-          propsArr.push(grandParentValue.id.name);
+        if (grandParentValue.id.name) {
+          uniquePush(propsArr, grandParentValue.id.name);
         } else {
-          grandParentValue.id.properties.forEach((p) => {
-            if (
-              (p.value || p.key) &&
-              !propsArr.includes(p.value.name || p.key.name)
-            ) {
-              propsArr.push(p.value.name || p.key.name);
-            }
-          });
+          grandParentValue.id.properties.forEach((p) =>
+            uniquePush(propsArr, p.key?.name || p.value?.name)
+          );
         }
       } else if (
-        (grandParentValue.type === 'BinaryExpression' ||
-          grandParentValue.type === 'IfStatement') &&
-        !propsArr.includes(grandParentValue[parentKey].property.name)
+        grandParentValue.type === 'BinaryExpression' ||
+        grandParentValue.type === 'IfStatement' ||
+        grandParentValue.type === 'AssignmentExpression' ||
+        grandParentValue.type === 'MemberExpression' ||
+        grandParentValue.type === 'LogicalExpression'
       ) {
-        propsArr.push(grandParentValue[parentKey].property.name);
-      } else if (
-        grandParentValue.property &&
-        !propsArr.includes(grandParentValue.property.name)
-      ) {
-        propsArr.push(grandParentValue.property.name);
-      } else if (grandParentValue.properties) {
-        grandParentValue.properties.forEach((p) => {
-          if (p.key && !propsArr.includes(p.key.name)) {
-            propsArr.push(p.key.name);
-          }
+        uniquePush(propsArr, grandParentValue[parentKey].property.name);
+      } else if (grandParentValue.property) {
+        uniquePush(propsArr, grandParentValue.property.name);
+      } else {
+        grandParentValue.properties?.forEach((p) => {
+          if (p.key?.name !== 'props') uniquePush(propsArr, p.key?.name);
         });
       }
     };
 
-    const populatePropTypesArray = ([grandParentObject, parentObject]) => {
+    /**
+     * callback function to be passed in getAncestors
+     * finds all propTypes defined in a Class based component and populates them in the propTypesArr
+     * @param {Array} ancestors
+     */
+    const populatePropTypesArray = ([, parentObject]) => {
+      hasPropTypes = true;
       const parentValue = Object.values(parentObject)[0];
-
       if (
         parentValue.type === 'PropertyDefinition' &&
         parentValue.key.name === 'propTypes'
       ) {
-        parentValue.value.properties.forEach((property) => {
-          if (!propTypesArr.includes(property.key.name))
-            propTypesArr.push(property.key.name);
-        });
+        parentValue.value.properties.forEach((property) =>
+          uniquePush(propTypesArr, property.key.name)
+        );
       }
     };
-    getParentAndGrandParent([], ast, 'ClassDeclaration', (arr) => {
-      if (arr.length > 0) {
-        getParentAndGrandParent([], ast, 'props', populatePropsArray);
-        getParentAndGrandParent([], ast, 'propTypes', populatePropTypesArray);
-      }
+
+    getAncestors([], ast, 'ClassDeclaration', () => {
+      isClassComponent = true;
+      getAncestors([], ast, 'props', populatePropsArray);
+      getAncestors([], ast, 'propTypes', populatePropTypesArray);
     });
+    if (!isClassComponent) {
+      let compName;
+      ast.body.forEach((scope) => {
+        if (
+          scope.type === 'ExpressionStatement' &&
+          scope.expression.left?.property?.name === 'propTypes'
+        ) {
+          hasPropTypes = true;
+          compName = scope.expression.left.object.name;
+          scope.expression.right.properties.forEach((p) =>
+            uniquePush(propTypesArr, p.key?.name)
+          );
+        }
+      });
+      if (hasPropTypes) {
+        ast.body.forEach((scope) => {
+          if (
+            scope.type === 'VariableDeclaration' &&
+            scope.declarations[0].id.name === compName
+          ) {
+            if (scope.declarations[0].init.params[0]?.name === 'props') {
+              // not destructured
+              scope.declarations[0].init.body.body.forEach((s) => {
+                if (
+                  s.type === 'VariableDeclaration' &&
+                  s.declarations[0].init.name === 'props'
+                ) {
+                  s.declarations[0].id.properties.forEach((p) =>
+                    uniquePush(propsArr, p.key?.name)
+                  );
+                }
+              });
+            } else {
+              // destructured
+              scope.declarations[0].init.params[0].properties.forEach((p) =>
+                uniquePush(propsArr, p.key?.name)
+              );
+            }
+            getAncestors([], scope, 'props', populatePropsArray);
+          } else if (
+            scope.type === 'FunctionDeclaration' &&
+            scope.id.name === compName
+          ) {
+            scope.params[0].properties.forEach((p) =>
+              uniquePush(propsArr, p.key?.name)
+            );
+            getAncestors([], scope, 'props', populatePropsArray);
+          }
+        });
+      }
+    }
 
     const missingPropsArr = propsArr.filter(
       (prop) => !propTypesArr.includes(prop)
     );
 
-    return missingPropsArr;
+    return [
+      isClassComponent,
+      propsArr,
+      !isClassComponent && !hasPropTypes ? null : missingPropsArr,
+    ];
   }
 }
 

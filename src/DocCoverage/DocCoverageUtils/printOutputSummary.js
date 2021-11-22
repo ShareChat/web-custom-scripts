@@ -8,7 +8,12 @@ const generateConsoleTable = (title, data) => {
 };
 
 const printOutputSummary = (data) => {
-  const { jsdocCoverage, storyBookCoverage, totalCoverage } = data;
+  const {
+    jsdocCoverage,
+    storyBookOrPropTypesCoverage,
+    totalCoverage,
+    completelyCoveredFiles,
+  } = data;
 
   console.log('###########################################################\n');
 
@@ -34,17 +39,17 @@ const printOutputSummary = (data) => {
     {
       myId: 'totalComponents',
       title: 'Number of Components',
-      value: storyBookCoverage.totalComponents,
+      value: storyBookOrPropTypesCoverage.totalComponents,
     },
     {
-      myId: 'componentsWithStories',
-      title: 'Components with Stories',
-      value: storyBookCoverage.componentsWithStoriesOrPropTypes,
+      myId: 'componentsWithStoriesOrPropTypes',
+      title: 'Documeted Components',
+      value: storyBookOrPropTypesCoverage.componentsWithStoriesOrPropTypes,
     },
     {
-      myId: 'storybookCoverage',
+      myId: 'storybookOrPropTypeCoverage',
       title: 'Coverage Percentage',
-      value: `${storyBookCoverage.storybookCoveragePercent}%`,
+      value: `${storyBookOrPropTypesCoverage.storyBookOrPropTypesCoveragePercent}%`,
     },
   ]);
 
@@ -63,6 +68,24 @@ const printOutputSummary = (data) => {
       myId: 'storybookCoverage',
       title: 'Coverage Percentage',
       value: totalCoverage.totalCoveragePercent,
+    },
+  ]);
+
+  generateConsoleTable('Completely Covered Files', [
+    {
+      myId: 'numOfFiles',
+      title: 'Total Scopes',
+      value: completelyCoveredFiles.totalExpectedCount,
+    },
+    {
+      myId: 'numOfFilesDocumented',
+      title: 'Documented Scopes',
+      value: completelyCoveredFiles.totalActualCount,
+    },
+    {
+      myId: 'storybookCoverage',
+      title: 'Coverage Percentage',
+      value: completelyCoveredFiles.totalCoveragePercent,
     },
   ]);
 
