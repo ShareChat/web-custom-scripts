@@ -31,6 +31,10 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
   5. storiesFolderPath - Path to the stories folder to be provided if it is outside the source folder.
   6. ecmaVersion - ECMA Script Version used in the project, by default 2020.
 
+  NOTE: If a particular JSX file is to be ignored and a genric path regex to exclude cannot be created,
+  add '/* !Doc Coverage Ignore */' as the first line in the file. Example of a situation when one might need to ignore a file -
+  * A small JSX file with no props, for which niether storybook nor proptype is required.
+
 ```
 
 ## Sample Config
@@ -44,5 +48,42 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
 	"testFolderName": "__test__",
 	"storiesFolderPath": "./stories"
 }
+
+```
+
+## Default Config
+
+```
+If no config is provided, the following is used as the default config
+javascript
+{
+        source: './src',
+        excludedPaths: [
+          '/assets/',
+          '/components/',
+          '/containers/',
+          '/__test__/',
+          '/config./',
+        ],
+        excludedComponentPaths: ['/__test__/'],
+        foldersWithJSXFiles: ['components', 'containers'],
+        testFolderName: '__test__',
+        storiesFolderPath: './stories',
+      }
+
+```
+
+```
+
+## Sample Results
+
+```
+
+We get 2 types of results on running the script -
+
+1. Summarized results in Tabular format in the console.
+2. A file called docCoverageReport.json is created under a directory called doc-coverage which contains the file wise coverage
+
+```
 
 ```

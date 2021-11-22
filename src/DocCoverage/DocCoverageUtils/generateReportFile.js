@@ -14,7 +14,7 @@ const generateReportFile = (astHash, componentsCoverage, data) => {
   }
 
   fs.writeFile(
-    `${dir}/docCoverageSummary.json`,
+    `${dir}/docCoverageReport.json`,
     JSON.stringify(output, null, 4),
     'utf8'
   );
