@@ -7,7 +7,7 @@ class StorybookCoverage {
    */
   static removeFilesWithStories(filePath, components) {
     const componentsMap = components;
-    if (filePath.match(/.stories.js/g)) {
+    if (filePath.match(/.stories./g)) {
       const fileData = fs.readFileSync(filePath, 'utf8');
       const lines = fileData.split('\n');
       const linesWithImports = lines.filter((line) => line.match(/import /));
@@ -17,13 +17,14 @@ class StorybookCoverage {
         const startIndex = linesWithImports[i].indexOf(typeOfQuoteUsed);
         const lastIndex = linesWithImports[i].lastIndexOf(typeOfQuoteUsed);
         const fileAddress = linesWithImports[i].slice(
-          startIndex + 2, // to remove alias @
+          startIndex + 3, // to remove alias @/ or .. or ./
           lastIndex
         );
         const componentsMapKeys = Object.keys(componentsMap);
         for (let j = 0; j < componentsMapKeys.length; j += 1) {
           if (componentsMapKeys[j].match(fileAddress)) {
-            delete componentsMap[componentsMapKeys[j]];
+            componentsMap[componentsMapKeys[j]].hasStory = true;
+            componentsMap[componentsMapKeys[j]].coverage = 100;
           }
         }
       }

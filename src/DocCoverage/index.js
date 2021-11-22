@@ -1,136 +1,15 @@
 #! /usr/bin/env node
 
-const fs = require('fs-extra');
-const acornLoose = require('acorn-loose');
-const escodegen = require('escodegen');
+const StorybookCoverage = require('./DocCoverageUtils/storybookCoverage');
+const PropTypesCoverage = require('./DocCoverageUtils/propTypesCoverage');
 const walk = require('../Utils/walk');
-const storybookCoverage = require('./DocCoverageUtils/storybookCoverage');
 const printOutputSummary = require('./DocCoverageUtils/printOutputSummary');
+const generateReportFile = require('./DocCoverageUtils/generateReportFile');
+const generateAst = require('./DocCoverageUtils/generateAst');
+const generateAstWithComments = require('./DocCoverageUtils/generateAstWithComments');
+const getCoveragePercentage = require('./DocCoverageUtils/getCoveragePercentage');
 
 class DocumentationCoverage {
-  /**
-   * filter function types.
-   * @returns {Array}
-   * @private
-   */
-  static createHash(ast, filePath) {
-    const functionTypes = ['FunctionExpression', 'ArrowFunctionExpression'];
-
-    const filterDeclarationTypes = (e) => {
-      switch (e.type) {
-        case 'FunctionDeclaration':
-          return {
-            functionName: e.id.name,
-            functionType: e.type,
-            hasLeadingComments:
-              e.leadingComments?.filter((i) => i.value.startsWith('*\n'))
-                .length > 0,
-          };
-        case 'VariableDeclaration':
-        case 'ExportNamedDeclaration':
-        case 'ExportDefaultDeclaration': {
-          let subobj = {};
-
-          if (e.type === 'VariableDeclaration') {
-            subobj = e.declarations?.[0];
-          }
-
-          if (e.type === 'ExportNamedDeclaration') {
-            subobj = e.declaration?.declarations?.[0];
-          }
-
-          if (e.type === 'ExportDefaultDeclaration') {
-            subobj = e.declaration;
-          }
-
-          if (subobj?.init?.type && functionTypes.includes(subobj.init.type)) {
-            return {
-              functionName: subobj.id.name,
-              functionType: e.type,
-              hasLeadingComments:
-                e.leadingComments?.filter((i) => i.value.startsWith('*\n'))
-                  .length > 0,
-            };
-          }
-          return false;
-        }
-
-        default:
-          return false;
-      }
-    };
-
-    const hash = {};
-
-    const fileSplit = filePath.split('/');
-
-    const fileName = `${fileSplit[fileSplit.length - 2]}#${
-      fileSplit[fileSplit.length - 1].split('.')[0]
-    }`;
-
-    let expectedCount = 0;
-    let actualCount = 0;
-
-    for (let i = 0; i < ast.body.length; i += 1) {
-      const e = ast.body[i];
-      const res = filterDeclarationTypes(e);
-      if (res) {
-        if (!hash[fileName]?.funcCoverage) {
-          hash[fileName] = { funcCoverage: {} };
-        }
-
-        hash[fileName] = {
-          funcCoverage: {
-            ...hash[fileName].funcCoverage,
-            [res.functionName]: res.hasLeadingComments,
-          },
-        };
-
-        if (res.hasLeadingComments) {
-          actualCount += 1;
-        }
-
-        expectedCount += 1;
-      }
-    }
-
-    if (Object.keys(hash).length > 0) {
-      hash[fileName] = {
-        ...hash[fileName],
-        fileCoverage: `${this.getCoveragePercentage(
-          actualCount,
-          expectedCount
-        )}%`,
-        filePath,
-      };
-      return hash;
-    }
-    return null;
-  }
-
-  static getCoveragePercentage(actualCount, expectedCount) {
-    return Math.floor((10000 * actualCount) / expectedCount) / 100;
-  }
-
-  static generateJsonSummary(astHash, data) {
-    const output = {
-      ...data,
-      fileWiseCoverage: astHash,
-    };
-
-    const dir = './doc-coverage';
-
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
-    }
-
-    fs.writeFile(
-      `${dir}/docCoverageSummary.json`,
-      JSON.stringify(output, null, 4),
-      'utf8'
-    );
-  }
-
   static getFunctionCount(response) {
     let expectedCount = 0;
     let actualCount = 0;
@@ -150,36 +29,15 @@ class DocumentationCoverage {
     };
   }
 
-  /**
-   * generates AST object
-   * @returns {Object}
-   * @private
-   */
-  static generateAstDoc(filePath, config) {
-    const file = fs.readFileSync(filePath, 'utf8');
-    const comments = [];
-    const tokens = [];
-
-    const ast = acornLoose.parse(file, {
-      ecmaVersion: config.ecmaVersion ?? 2020,
-      // collect ranges for each node
-      ranges: true,
-      // collect comments in Esprima's format !imp
-      onComment: comments,
-      // collect token ranges
-      onToken: tokens,
-    });
-
-    // attachs comments to ast doc
-    escodegen.attachComments(ast, comments, tokens);
-    return this.createHash(ast, filePath);
-  }
-
   static generateReport(config) {
-    const results = [];
     let astHash = {};
     let actualCount = 0;
     let expectedCount = 0;
+    let componentsMap = {};
+    let totalComponents = 0;
+    let numOfProps = 0;
+    let numOfPropTypesDefined = 0;
+
     const isExcluded = (filePath, excludedPaths) => {
       if (excludedPaths && excludedPaths.length > 0) {
         for (let i = 0; i < excludedPaths.length; i += 1) {
@@ -191,13 +49,21 @@ class DocumentationCoverage {
       return false;
     };
 
-    let componentsMap = {};
-    let totalComponents = 0;
     walk(config.source, (filePath) => {
-      // Find total scopes(expectCount) and documented scopes(actualCount)
+      let isJSXFile = false;
+      if (filePath === '/Users/shivanisehgal/Desktop/pwa-moj/src/api/index.js')
+        console.log(filePath);
+      // Find total scopes(expectCount) and documented scopes(actualCount) in non JSX files
       if (!isExcluded(filePath, config.excludedPaths)) {
         // generates ast doc
-        const response = this.generateAstDoc(filePath, config);
+
+        const response = generateAstWithComments(filePath, config);
+        if (
+          filePath === '/Users/shivanisehgal/Desktop/pwa-moj/src/api/index.js'
+        ) {
+          console.log('***************');
+          console.log(response);
+        }
         if (response) {
           astHash = {
             ...astHash,
@@ -209,41 +75,79 @@ class DocumentationCoverage {
         }
       }
 
-      // Populate components Map with all component file paths
-      if (
-        filePath.match(`/${config.componentsFolderName}/`) &&
-        !isExcluded(filePath, config.excludedComponentPaths)
-      ) {
-        componentsMap[filePath] = false;
+      // Populate components Map with all JSX file paths
+      config.foldersWithJSXFiles.forEach((folder) => {
+        if (filePath.match(`/${folder}/`)) {
+          isJSXFile = true;
+        }
+      });
+      if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
+        const astObject = generateAst(filePath, config);
+        if (astObject !== null) {
+          const [isClassComponent, totalProps, missingPropTypes] =
+            PropTypesCoverage.getMissingPropTypes(astObject);
+          const totalPropsLength = totalProps.length;
+          const missingPropTypesLength = missingPropTypes
+            ? missingPropTypes.length
+            : null;
+
+          numOfProps += totalPropsLength;
+          numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
+
+          componentsMap[filePath] = {
+            hasStory: false,
+            hasAllPropTypes:
+              missingPropTypesLength !== null
+                ? missingPropTypesLength === 0
+                : false,
+            componentType: isClassComponent ? 'Class Based' : 'Functional',
+            // props: totalProps,
+            missingPropTypes:
+              totalPropsLength && totalPropsLength !== missingPropTypesLength
+                ? missingPropTypes
+                : 'No PropTypes Found',
+            coverage: totalPropsLength
+              ? getCoveragePercentage(
+                  totalPropsLength - missingPropTypesLength,
+                  totalPropsLength
+                )
+              : 0,
+          };
+        }
       }
       totalComponents = Object.keys(componentsMap).length;
 
       // if story files are inside src folder
-      if (!config.storiesFolderPath || config.storiesFolderPath === '')
-        componentsMap = storybookCoverage.removeFilesWithStories(
+      if (!config.storiesFolderPath || config.storiesFolderPath === '') {
+        componentsMap = StorybookCoverage.removeFilesWithStories(
           filePath,
           componentsMap
         );
-      results.push(filePath);
+      }
     });
+
     walk(config.storiesFolderPath, (filePath) => {
-      componentsMap = storybookCoverage.removeFilesWithStories(
+      componentsMap = StorybookCoverage.removeFilesWithStories(
         filePath,
         componentsMap
       );
     });
 
-    const componentsWithStories =
-      totalComponents - Object.keys(componentsMap).length;
-    const storybookCoveragePercent =
+    const componentsWithStoriesOrPropTypes = Object.values(
+      componentsMap
+    ).filter(
+      (component) =>
+        component.hasStory || component.missingPropTypes?.length === 0
+    ).length;
+    const storyBookOrPropTypesCoveragePercent =
       totalComponents === 0
         ? 0
-        : Math.floor((10000 * componentsWithStories) / totalComponents) / 100;
+        : getCoveragePercentage(
+            componentsWithStoriesOrPropTypes,
+            totalComponents
+          );
 
-    const coveragePercent = this.getCoveragePercentage(
-      actualCount,
-      expectedCount
-    );
+    const coveragePercent = getCoveragePercentage(actualCount, expectedCount);
 
     const summary = {
       jsdocCoverage: {
@@ -251,22 +155,30 @@ class DocumentationCoverage {
         actualCount,
         coveragePercent,
       },
-      storyBookCoverage: {
+      storyBookOrPropTypesCoverage: {
         totalComponents,
-        componentsWithStories,
-        storybookCoveragePercent,
+        componentsWithStoriesOrPropTypes,
+        storyBookOrPropTypesCoveragePercent,
       },
       totalCoverage: {
+        totalExpectedCount: numOfProps + expectedCount,
+        totalActualCount: numOfPropTypesDefined + actualCount,
+        totalCoveragePercent: getCoveragePercentage(
+          numOfPropTypesDefined + actualCount,
+          numOfProps + expectedCount
+        ),
+      },
+      completelyCoveredFiles: {
         totalExpectedCount: totalComponents + expectedCount,
-        totalActualCount: componentsWithStories + actualCount,
-        totalCoveragePercent: this.getCoveragePercentage(
-          componentsWithStories + actualCount,
+        totalActualCount: componentsWithStoriesOrPropTypes + actualCount,
+        totalCoveragePercent: getCoveragePercentage(
+          componentsWithStoriesOrPropTypes + actualCount,
           totalComponents + expectedCount
         ),
       },
     };
 
-    this.generateJsonSummary(astHash, summary);
+    generateReportFile(astHash, componentsMap, summary);
     printOutputSummary(summary);
   }
 }

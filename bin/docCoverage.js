@@ -2,6 +2,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const DocumentationCoverage = require('../src/DocCoverage/index');
+// const getParentAndGrandParent = require('../src/DocCoverage/DocCoverageUtils/propTypesCoverage');
 
 class DocumentationCoverageCli {
   /**
@@ -55,7 +56,21 @@ class DocumentationCoverageCli {
     if (config) {
       DocumentationCoverage.generateReport(config);
     } else {
-      process.exit(1);
+      const defaultConfig = {
+        source: './src',
+        excludedPaths: [
+          '/assets/',
+          '/components/',
+          '/containers/',
+          '/__test__/',
+          '/config./',
+        ],
+        excludedComponentPaths: ['/__test__/'],
+        foldersWithJSXFiles: ['components', 'containers'],
+        testFolderName: '__test__',
+        storiesFolderPath: './stories',
+      };
+      DocumentationCoverage.generateReport(defaultConfig);
     }
   }
 }
