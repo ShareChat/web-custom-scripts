@@ -30,10 +30,15 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
   4. componentsFolderName - Name of the folder containing all UI components.
   5. storiesFolderPath - Path to the stories folder to be provided if it is outside the source folder.
   6. ecmaVersion - ECMA Script Version used in the project, by default 2020.
-
-  NOTE: If a particular JSX file is to be ignored and a genric path regex to exclude cannot be created,
-  add '/* !Doc Coverage Ignore */' as the first line in the file. Example of a situation when one might need to ignore a file -
-  * A small JSX file with no props, for which niether storybook nor proptype is required.
+  
+```
+  ## Ignore a JSX File
+```
+  If a particular JSX file is to be ignored and a genric path regex to exclude cannot be created -
+  Add '/* !Doc Coverage Ignore */' as the first line in the file.
+  
+  Example of a situation when one might need to ignore a file -
+  A small JSX file with no props, for which niether storybook nor proptype is required.
 
 ```
 
