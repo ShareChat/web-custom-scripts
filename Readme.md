@@ -25,7 +25,7 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
 
   1. source - Path to the source folder.
   2. excludedPaths - Array of Path regex to be ignored while calculating JSDoc Coverage.
-  3. excludedComponentPaths - Array of Path regex to be ignored while calculating Storybook Coverage(inside components folder).
+  3. excludedComponentPaths - Array of Path regex to be ignored while calculating JSX File Coverage(inside components folder).
    * Example - if only index files are to be considered for stories, add "^((?!index.js).)*$" in the array. This ignores all files except index.
   4. componentsFolderName - Name of the folder containing all UI components.
   5. storiesFolderPath - Path to the stories folder to be provided if it is outside the source folder.
@@ -79,16 +79,34 @@ If no config is provided, the following is used as the default config
 ```
 
 
-## Sample Results
+## Results Summary in console
 
 ```
 
-We get 2 types of results on running the script -
+Refer the following image link for example.
+https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-914b-0a1ae5b7b3c8.png
 
-1. Summarized results in Tabular format in the console.
-https://user-images.githubusercontent.com/92925973/142854472-f517ed22-7b79-4200-bef3-322d6949713b.png
+   We get 4 tables in the console - 
+   
+   1. JSDoc Coverage - For Non JSX files. The script looks for leading JSDoc comments for all top level blocks of a file. 
+      ( 1 scope = 1 top level block/function )
+      
+   2. JSX File Coverage - A JSX File is considered fully documented if it is either imported in atleast one '.stories' file or has prop types defined.
+      We get 2 scores in this table - 
+      	1. Fully Covered Files - Fully documented files / Total files
+	2. PropTypes Coverage - num of prop types / total props
+   
+   3. Completely Covered File - combined score of JSDoc and JSX (Fully Covered Files)
+   
+   4. Total Coverage - combined score of JSDoc and JSX (PropTypes Coverage)
 
-2. A file called docCoverageReport.json is created under a directory called doc-coverage which contains the file wise coverage
+```
+
+
+## Detailed Coverage Report
+
+```
+ A file called docCoverageReport.json is created under a directory called doc-coverage which contains the file wise coverage
 
 ```
 
