@@ -51,19 +51,12 @@ class DocumentationCoverage {
 
     walk(config.source, (filePath) => {
       let isJSXFile = false;
-      if (filePath === '/Users/shivanisehgal/Desktop/pwa-moj/src/api/index.js')
-        console.log(filePath);
       // Find total scopes(expectCount) and documented scopes(actualCount) in non JSX files
       if (!isExcluded(filePath, config.excludedPaths)) {
         // generates ast doc
 
         const response = generateAstWithComments(filePath, config);
-        if (
-          filePath === '/Users/shivanisehgal/Desktop/pwa-moj/src/api/index.js'
-        ) {
-          console.log('***************');
-          console.log(response);
-        }
+
         if (response) {
           astHash = {
             ...astHash,

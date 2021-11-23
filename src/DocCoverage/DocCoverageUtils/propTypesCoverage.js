@@ -43,9 +43,14 @@ class PropTypesCoverage {
         grandParentValue.type === 'IfStatement' ||
         grandParentValue.type === 'AssignmentExpression' ||
         grandParentValue.type === 'MemberExpression' ||
-        grandParentValue.type === 'LogicalExpression'
+        grandParentValue.type === 'LogicalExpression' ||
+        grandParentValue.type === 'CallExpression'
       ) {
-        uniquePush(propsArr, grandParentValue[parentKey].property.name);
+        if (grandParentValue[parentKey].property.name !== 'props') {
+          uniquePush(propsArr, grandParentValue[parentKey].property.name);
+        } else {
+          uniquePush(propsArr, grandParentValue.property.name);
+        }
       } else if (grandParentValue.property) {
         uniquePush(propsArr, grandParentValue.property.name);
       } else {
