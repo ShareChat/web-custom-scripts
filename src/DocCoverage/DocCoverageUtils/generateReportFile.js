@@ -3,8 +3,8 @@ const fs = require('fs-extra');
 const generateReportFile = (astHash, componentsCoverage, data) => {
   const output = {
     ...data,
-    FileWiseCoverageJSDOC: astHash,
-    FileWiseCoverageJSX: componentsCoverage,
+    fileWiseCoverageJSDOC: astHash,
+    fileWiseCoverageJSX: componentsCoverage,
   };
 
   const dir = './doc-coverage';

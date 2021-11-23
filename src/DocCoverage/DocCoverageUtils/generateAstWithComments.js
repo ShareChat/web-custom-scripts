@@ -6,10 +6,6 @@ const getCoveragePercentage = require('./getCoveragePercentage');
 const createHash = (ast, filePath) => {
   const functionTypes = ['FunctionExpression', 'ArrowFunctionExpression'];
   const hash = {};
-  const fileSplit = filePath.split('/');
-  const fileName = `${fileSplit[fileSplit.length - 2]}#${
-    fileSplit[fileSplit.length - 1].split('.')[0]
-  }`;
   let expectedCount = 0;
   let actualCount = 0;
 
@@ -69,13 +65,13 @@ const createHash = (ast, filePath) => {
     const res = filterDeclarationTypes(e);
 
     if (res) {
-      if (!hash[fileName]?.funcCoverage) {
-        hash[fileName] = { funcCoverage: {} };
+      if (!hash[filePath]?.funcCoverage) {
+        hash[filePath] = { funcCoverage: {} };
       }
 
-      hash[fileName] = {
+      hash[filePath] = {
         funcCoverage: {
-          ...hash[fileName].funcCoverage,
+          ...hash[filePath].funcCoverage,
           [res.functionName]: res.hasLeadingComments,
         },
       };
@@ -89,10 +85,9 @@ const createHash = (ast, filePath) => {
   }
 
   if (Object.keys(hash).length > 0) {
-    hash[fileName] = {
-      ...hash[fileName],
+    hash[filePath] = {
+      ...hash[filePath],
       fileCoverage: `${getCoveragePercentage(actualCount, expectedCount)}%`,
-      filePath,
     };
     return hash;
   }
@@ -116,9 +111,7 @@ const generateAstWithComments = (filePath, config) => {
 
   // attachs comments to ast doc
   escodegen.attachComments(ast, comments, tokens);
-  if (filePath === '/Users/shivanisehgal/Desktop/pwa-moj/src/api/index.js') {
-    // console.log(ast);
-  }
+
   return createHash(ast, filePath);
 };
 

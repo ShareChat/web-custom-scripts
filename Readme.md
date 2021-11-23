@@ -30,13 +30,15 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
   4. componentsFolderName - Name of the folder containing all UI components.
   5. storiesFolderPath - Path to the stories folder to be provided if it is outside the source folder.
   6. ecmaVersion - ECMA Script Version used in the project, by default 2020.
-  
+
 ```
-  ## Ignore a JSX File
+
+## Ignore a JSX File
+
 ```
   If a particular JSX file is to be ignored and a genric path regex to exclude cannot be created -
   Add '/* !Doc Coverage Ignore */' as the first line in the file.
-  
+
   Example of a situation when one might need to ignore a file -
   A small JSX file with no props, for which niether storybook nor proptype is required.
 
@@ -78,7 +80,6 @@ If no config is provided, the following is used as the default config
 
 ```
 
-
 ## Results Summary in console
 
 ```
@@ -86,27 +87,58 @@ If no config is provided, the following is used as the default config
 Refer the following image link for example.
 https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-914b-0a1ae5b7b3c8.png
 
-   We get 4 tables in the console - 
-   
-   1. JSDoc Coverage - For Non JSX files. The script looks for leading JSDoc comments for all top level blocks of a file. 
+   We get 4 tables in the console -
+
+   1. JSDoc Coverage - For Non JSX files. The script looks for leading JSDoc comments for all top level blocks of a file.
       ( 1 scope = 1 top level block/function )
-      
+
    2. JSX File Coverage - A JSX File is considered fully documented if it is either imported in atleast one '.stories' file or has prop types defined.
-      We get 2 scores in this table - 
+      We get 2 scores in this table -
       	1. Fully Covered Files - Fully documented files / Total files
 	2. PropTypes Coverage - num of prop types / total props
-   
+
    3. Completely Covered File - combined score of JSDoc and JSX (Fully Covered Files)
-   
+
    4. Total Coverage - combined score of JSDoc and JSX (PropTypes Coverage)
 
 ```
 
-
 ## Detailed Coverage Report
 
 ```
- A file called docCoverageReport.json is created under a directory called doc-coverage which contains the file wise coverage
+ A file called docCoverageReport.json is created under a directory called doc-coverage which contains the file wise coverage.
+
+ Apart from giving the same information as the tables in console it has 2 extra keys -
+ 1. fileWiseCoverageJSDoc - Object with file path as the key.
+    Example:
+    "/Users/shivanisehgal/Desktop/pwa-sharechat/src/firebase-messaging-amp.sw.js": {
+            "funcCoverage": {
+                "urlB64ToUint8Array": false,
+                "onMessageReceivedSubscriptionState": true,
+                "onMessageReceivedSubscribe": true,
+                "onMessageReceivedUnsubscribe": true,
+                "broadcastReply": true,
+                "persistSubscriptionLocally": true
+            },
+            "fileCoverage": "83.33%"
+        },
+
+ 2. fileWiseCoverageJSX - Object with file path as the key.
+    Example:
+    "/Users/shivanisehgal/Desktop/pwa-sharechat/src/components/molecules/IndefiniteLoading/index.js": {
+            "hasStory": false,
+            "hasAllPropTypes": false,
+            "componentType": "Functional",
+            "missingPropTypes": [
+                "error",
+                "timedOut",
+                "pastDelay"
+            ],
+            "coverage": 25
+    }
+
+
+```
 
 ```
 

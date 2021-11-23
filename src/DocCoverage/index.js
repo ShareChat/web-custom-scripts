@@ -140,18 +140,20 @@ class DocumentationCoverage {
             totalComponents
           );
 
-    const coveragePercent = getCoveragePercentage(actualCount, expectedCount);
-
     const summary = {
       jsdocCoverage: {
         expectedCount,
         actualCount,
-        coveragePercent,
+        coveragePercent: getCoveragePercentage(actualCount, expectedCount),
       },
-      storyBookOrPropTypesCoverage: {
+      JSXFileCoverage: {
         totalComponents,
         componentsWithStoriesOrPropTypes,
         storyBookOrPropTypesCoveragePercent,
+        propTypesCoverage: getCoveragePercentage(
+          numOfPropTypesDefined,
+          numOfProps
+        ),
       },
       totalCoverage: {
         totalExpectedCount: numOfProps + expectedCount,
