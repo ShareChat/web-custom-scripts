@@ -27,7 +27,7 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
   2. excludedPaths - Array of Path regex to be ignored while calculating JSDoc Coverage.
   3. excludedComponentPaths - Array of Path regex to be ignored while calculating JSX File Coverage(inside components folder).
    * Example - if only index files are to be considered for stories, add "^((?!index.js).)*$" in the array. This ignores all files except index.
-  4. componentsFolderName - Name of the folder containing all UI components.
+  4. foldersWithJSXFiles - Array of folder names containing all UI components.
   5. storiesFolderPath - Path to the stories folder to be provided if it is outside the source folder.
   6. ecmaVersion - ECMA Script Version used in the project, by default 2020.
 
@@ -52,7 +52,6 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
 	"excludedPaths": ["/assets/", "/components/","/containers/", "/__test__/", "/config./"],
 	"excludedComponentPaths": ["/__test__/", "^((?!index.js).)*$"],
 	"foldersWithJSXFiles": ["components", "containers"],
-	"testFolderName": "__test__",
 	"storiesFolderPath": "./stories"
 }
 

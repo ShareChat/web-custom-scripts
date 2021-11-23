@@ -67,7 +67,6 @@ class DocumentationCoverageCli {
         ],
         excludedComponentPaths: ['/__test__/'],
         foldersWithJSXFiles: ['components', 'containers'],
-        testFolderName: '__test__',
         storiesFolderPath: './stories',
       };
       DocumentationCoverage.generateReport(defaultConfig);
