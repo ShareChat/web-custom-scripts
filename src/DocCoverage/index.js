@@ -74,13 +74,7 @@ class DocumentationCoverage {
           isJSXFile = true;
         }
       });
-      if (
-        isJSXFile &&
-        !isExcluded(filePath, config.excludedComponentPaths)
-        // &&
-        // filePath ===
-        //   '/Users/shivanisehgal/Desktop/pwa-sharechat/src/components/molecules/ObserveIntersection/index.js'
-      ) {
+      if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
         const astObject = generateAst(filePath, config);
         if (astObject !== null) {
           const [isClassComponent, totalProps, missingPropTypes] =
