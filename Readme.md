@@ -55,7 +55,7 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
 
 ```
 If no config is provided, the following is used as the default config
-javascript
+
 {
         source: './src',
         excludedPaths: [
@@ -69,11 +69,10 @@ javascript
         foldersWithJSXFiles: ['components', 'containers'],
         testFolderName: '__test__',
         storiesFolderPath: './stories',
-      }
+ }
 
 ```
 
-```
 
 ## Sample Results
 
@@ -82,6 +81,8 @@ javascript
 We get 2 types of results on running the script -
 
 1. Summarized results in Tabular format in the console.
+https://user-images.githubusercontent.com/92925973/142854472-f517ed22-7b79-4200-bef3-322d6949713b.png
+
 2. A file called docCoverageReport.json is created under a directory called doc-coverage which contains the file wise coverage
 
 ```
