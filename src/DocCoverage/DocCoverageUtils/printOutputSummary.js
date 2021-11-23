@@ -35,7 +35,7 @@ const printOutputSummary = (data) => {
     },
   ]);
 
-  generateConsoleTable('Storybook Coverage', [
+  generateConsoleTable('JSX File Coverage', [
     {
       myId: 'totalComponents',
       title: 'Number of Components',

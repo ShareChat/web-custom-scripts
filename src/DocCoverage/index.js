@@ -51,19 +51,12 @@ class DocumentationCoverage {
 
     walk(config.source, (filePath) => {
       let isJSXFile = false;
-      if (filePath === '/Users/shivanisehgal/Desktop/pwa-moj/src/api/index.js')
-        console.log(filePath);
       // Find total scopes(expectCount) and documented scopes(actualCount) in non JSX files
       if (!isExcluded(filePath, config.excludedPaths)) {
         // generates ast doc
 
         const response = generateAstWithComments(filePath, config);
-        if (
-          filePath === '/Users/shivanisehgal/Desktop/pwa-moj/src/api/index.js'
-        ) {
-          console.log('***************');
-          console.log(response);
-        }
+
         if (response) {
           astHash = {
             ...astHash,
@@ -81,7 +74,13 @@ class DocumentationCoverage {
           isJSXFile = true;
         }
       });
-      if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
+      if (
+        isJSXFile &&
+        !isExcluded(filePath, config.excludedComponentPaths)
+        // &&
+        // filePath ===
+        //   '/Users/shivanisehgal/Desktop/pwa-sharechat/src/components/molecules/ObserveIntersection/index.js'
+      ) {
         const astObject = generateAst(filePath, config);
         if (astObject !== null) {
           const [isClassComponent, totalProps, missingPropTypes] =
