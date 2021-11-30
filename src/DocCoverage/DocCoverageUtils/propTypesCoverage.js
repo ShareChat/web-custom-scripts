@@ -19,7 +19,7 @@ class PropTypesCoverage {
 
     /**
      * callback function to be passed in getAncestors
-     * finds all props used in a Class based component and populates them in the propsArr
+     * finds all props used in a component and populates them in the propsArr
      * @param {Array} ancestors
      */
     const populatePropsArray = ([
