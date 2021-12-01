@@ -29,7 +29,8 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
    * Example - if only index files are to be considered for stories, add "^((?!index.js).)*$" in the array. This ignores all files except index.
   4. foldersWithJSXFiles - Array of folder names containing all UI components.
   5. storiesFolderPath - Path to the stories folder to be provided if it is outside the source folder.
-  6. ecmaVersion - ECMA Script Version used in the project, by default 2020.
+  6. ecmaVersion - ECMA Script Version (required for parsing into ast), by default latest is used.
+  7. framework - framework used (currently react and svelte are supported), by default react.
 
 ```
 
@@ -52,7 +53,8 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
 	"excludedPaths": ["/assets/", "/components/","/containers/", "/__test__/", "/config./"],
 	"excludedComponentPaths": ["/__test__/", "^((?!index.js).)*$"],
 	"foldersWithJSXFiles": ["components", "containers"],
-	"storiesFolderPath": "./stories"
+	"storiesFolderPath": "./stories",
+  "framework": "svelte"
 }
 
 ```
@@ -138,12 +140,13 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
 
 
 ```
+
 ## Important Note
 
 ```
 To get an accurate proptypes coverage, avoid rest operator for props where ever possible.
 Currently this syntax is not identified by the parser => {props.something}.
 
-The curly braces used to evaluate a JavaScript expression are read as an object by the parser 
+The curly braces used to evaluate a JavaScript expression are read as an object by the parser
 and hence is not able to give us the property name.
 ```

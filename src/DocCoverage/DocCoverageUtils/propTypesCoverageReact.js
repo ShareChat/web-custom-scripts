@@ -1,6 +1,6 @@
 const getAncestors = require('./getAncestors');
 
-class PropTypesCoverage {
+class PropTypesCoverageReact {
   /**
    * finds missing prop types.
    * @param {object} ast
@@ -147,4 +147,4 @@ class PropTypesCoverage {
   }
 }
 
-module.exports = PropTypesCoverage;
+module.exports = PropTypesCoverageReact;

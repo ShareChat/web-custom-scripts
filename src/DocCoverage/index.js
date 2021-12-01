@@ -1,7 +1,8 @@
 #! /usr/bin/env node
 
 const StorybookCoverage = require('./DocCoverageUtils/storybookCoverage');
-const PropTypesCoverage = require('./DocCoverageUtils/propTypesCoverage');
+const PropTypesCoverageReact = require('./DocCoverageUtils/propTypesCoverageReact');
+const PropTypesCoverageSvelte = require('./DocCoverageUtils/propTypesCoverageSvelte');
 const walk = require('../Utils/walk');
 const printOutputSummary = require('./DocCoverageUtils/printOutputSummary');
 const generateReportFile = require('./DocCoverageUtils/generateReportFile');
@@ -49,14 +50,67 @@ class DocumentationCoverage {
       return false;
     };
 
+    const populateComponentsMap = (astObject) => {
+      const isSvelte = config.framework === 'svelte';
+      let isClassComponent;
+      let totalProps;
+      let missingPropTypes;
+      if (isSvelte)
+        [totalProps, missingPropTypes] =
+          PropTypesCoverageSvelte.getMissingPropTypes(astObject);
+      else
+        [isClassComponent, totalProps, missingPropTypes] =
+          PropTypesCoverageReact.getMissingPropTypes(astObject);
+
+      const totalPropsLength = totalProps.length;
+      const missingPropTypesLength = missingPropTypes
+        ? missingPropTypes.length
+        : null;
+
+      numOfProps += totalPropsLength;
+      numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
+
+      switch (config.framework) {
+        case 'svelte':
+          return {
+            hasStory: false,
+            hasAllPropTypes: missingPropTypesLength === 0,
+            missingPropTypes,
+            coverage: totalPropsLength
+              ? getCoveragePercentage(
+                  totalPropsLength - missingPropTypesLength,
+                  totalPropsLength
+                )
+              : 0,
+          };
+        default:
+          return {
+            hasStory: false,
+            hasAllPropTypes:
+              missingPropTypesLength !== null
+                ? missingPropTypesLength === 0
+                : false,
+            componentType: isClassComponent ? 'Class Based' : 'Functional',
+            missingPropTypes:
+              totalPropsLength && totalPropsLength !== missingPropTypesLength
+                ? missingPropTypes
+                : 'No PropTypes Found',
+            coverage: totalPropsLength
+              ? getCoveragePercentage(
+                  totalPropsLength - missingPropTypesLength,
+                  totalPropsLength
+                )
+              : 0,
+          };
+      }
+    };
+
     walk(config.source, (filePath) => {
       let isJSXFile = false;
       // Find total scopes(expectCount) and documented scopes(actualCount) in non JSX files
       if (!isExcluded(filePath, config.excludedPaths)) {
         // generates ast doc
-
         const response = generateAstWithComments(filePath, config);
-
         if (response) {
           astHash = {
             ...astHash,
@@ -77,35 +131,7 @@ class DocumentationCoverage {
       if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
         const astObject = generateAst(filePath, config);
         if (astObject !== null) {
-          const [isClassComponent, totalProps, missingPropTypes] =
-            PropTypesCoverage.getMissingPropTypes(astObject);
-          const totalPropsLength = totalProps.length;
-          const missingPropTypesLength = missingPropTypes
-            ? missingPropTypes.length
-            : null;
-
-          numOfProps += totalPropsLength;
-          numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
-
-          componentsMap[filePath] = {
-            hasStory: false,
-            hasAllPropTypes:
-              missingPropTypesLength !== null
-                ? missingPropTypesLength === 0
-                : false,
-            componentType: isClassComponent ? 'Class Based' : 'Functional',
-            // props: totalProps,
-            missingPropTypes:
-              totalPropsLength && totalPropsLength !== missingPropTypesLength
-                ? missingPropTypes
-                : 'No PropTypes Found',
-            coverage: totalPropsLength
-              ? getCoveragePercentage(
-                  totalPropsLength - missingPropTypesLength,
-                  totalPropsLength
-                )
-              : 0,
-          };
+          componentsMap[filePath] = populateComponentsMap(astObject);
         }
       }
       totalComponents = Object.keys(componentsMap).length;
