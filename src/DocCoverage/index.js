@@ -55,12 +55,13 @@ class DocumentationCoverage {
       let isClassComponent;
       let totalProps;
       let missingPropTypes;
-      if (isSvelte)
+      if (isSvelte) {
         [totalProps, missingPropTypes] =
           PropTypesCoverageSvelte.getMissingPropTypes(astObject);
-      else
+      } else {
         [isClassComponent, totalProps, missingPropTypes] =
           PropTypesCoverageReact.getMissingPropTypes(astObject);
+      }
 
       const totalPropsLength = totalProps.length;
       const missingPropTypesLength = missingPropTypes
@@ -120,37 +121,38 @@ class DocumentationCoverage {
           expectedCount += resultObj.expectedCount;
           actualCount += resultObj.actualCount;
         }
-      }
 
-      // Populate components Map with all JSX file paths
-      config.foldersWithJSXFiles.forEach((folder) => {
-        if (filePath.match(`/${folder}/`)) {
-          isJSXFile = true;
+        // Populate components Map with all JSX file paths
+        config.foldersWithJSXFiles.forEach((folder) => {
+          if (filePath.match(`/${folder}/`)) {
+            isJSXFile = true;
+          }
+        });
+        if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
+          const astObject = generateAst(filePath, config);
+          console.log(filePath);
+          if (astObject !== null) {
+            componentsMap[filePath] = populateComponentsMap(astObject);
+          }
         }
-      });
-      if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
-        const astObject = generateAst(filePath, config);
-        if (astObject !== null) {
-          componentsMap[filePath] = populateComponentsMap(astObject);
+        totalComponents = Object.keys(componentsMap).length;
+
+        // if story files are inside src folder
+        if (!config.storiesFolderPath || config.storiesFolderPath === '') {
+          componentsMap = StorybookCoverage.removeFilesWithStories(
+            filePath,
+            componentsMap
+          );
         }
       }
-      totalComponents = Object.keys(componentsMap).length;
-
-      // if story files are inside src folder
-      if (!config.storiesFolderPath || config.storiesFolderPath === '') {
+    });
+    if (config.storiesFolderPath)
+      walk(config.storiesFolderPath, (filePath) => {
         componentsMap = StorybookCoverage.removeFilesWithStories(
           filePath,
           componentsMap
         );
-      }
-    });
-
-    walk(config.storiesFolderPath, (filePath) => {
-      componentsMap = StorybookCoverage.removeFilesWithStories(
-        filePath,
-        componentsMap
-      );
-    });
+      });
 
     const componentsWithStoriesOrPropTypes = Object.values(
       componentsMap

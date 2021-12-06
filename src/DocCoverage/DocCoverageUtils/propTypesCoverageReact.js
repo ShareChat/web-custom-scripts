@@ -103,7 +103,7 @@ class PropTypesCoverageReact {
             scope.type === 'VariableDeclaration' &&
             scope.declarations[0].id.name === compName
           ) {
-            if (scope.declarations[0].init.params[0]?.name === 'props') {
+            if (scope.declarations[0].init.params?.[0]?.name === 'props') {
               // not destructured
               scope.declarations[0].init.body.body.forEach((s) => {
                 if (
@@ -117,7 +117,7 @@ class PropTypesCoverageReact {
               });
             } else {
               // destructured
-              scope.declarations[0].init.params[0].properties.forEach((p) =>
+              scope.declarations[0].init.params?.[0].properties.forEach((p) =>
                 uniquePush(propsArr, p.key?.name)
               );
             }
