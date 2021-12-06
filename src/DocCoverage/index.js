@@ -121,7 +121,11 @@ class DocumentationCoverage {
           expectedCount += resultObj.expectedCount;
           actualCount += resultObj.actualCount;
         }
-
+      }
+      if (
+        config.source !== './' ||
+        !isExcluded(filePath, config.excludedPaths)
+      ) {
         // Populate components Map with all JSX file paths
         config.foldersWithJSXFiles.forEach((folder) => {
           if (filePath.match(`/${folder}/`)) {
