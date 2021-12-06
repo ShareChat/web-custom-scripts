@@ -20,7 +20,6 @@ class StorybookCoverage {
           startIndex, // to remove alias @/ or .. or ./
           lastIndex
         );
-        console.log(fileAddress);
         const componentsMapKeys = Object.keys(componentsMap);
         for (let j = 0; j < componentsMapKeys.length; j += 1) {
           if (componentsMapKeys[j].match(fileAddress)) {
