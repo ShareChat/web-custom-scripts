@@ -130,7 +130,6 @@ class DocumentationCoverage {
         });
         if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
           const astObject = generateAst(filePath, config);
-          console.log(filePath);
           if (astObject !== null) {
             componentsMap[filePath] = populateComponentsMap(astObject);
           }
