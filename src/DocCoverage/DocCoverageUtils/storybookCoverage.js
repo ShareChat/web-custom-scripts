@@ -16,13 +16,15 @@ class StorybookCoverage {
         const typeOfQuoteUsed = linesWithImports[i].includes("'") ? "'" : '"';
         const startIndex = linesWithImports[i].indexOf(typeOfQuoteUsed);
         const lastIndex = linesWithImports[i].lastIndexOf(typeOfQuoteUsed);
-        const fileAddress = linesWithImports[i].replace(/..\//g, '').slice(
-          startIndex, // to remove alias @/ or .. or ./
-          lastIndex
-        );
+        const fileAddress = linesWithImports[i]
+          .slice(
+            startIndex + 1, // to remove alias @/ or .. or ./
+            lastIndex
+          )
+          .replace(/\.\.\//g, '');
         const componentsMapKeys = Object.keys(componentsMap);
         for (let j = 0; j < componentsMapKeys.length; j += 1) {
-          if (componentsMapKeys[j].match(fileAddress)) {
+          if (componentsMapKeys[j].match(`${fileAddress}`)) {
             componentsMap[componentsMapKeys[j]].hasStory = true;
             componentsMap[componentsMapKeys[j]].coverage = 100;
           }

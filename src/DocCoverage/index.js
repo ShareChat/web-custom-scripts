@@ -148,7 +148,8 @@ class DocumentationCoverage {
         if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
           const astObject = generateAst(filePath, config);
           if (astObject !== null) {
-            componentsMap[filePath] = populateComponentsMap(astObject);
+            componentsMap[filePath.replace('react', '')] =
+              populateComponentsMap(astObject);
           }
         }
         totalComponents = Object.keys(componentsMap).length;
@@ -176,6 +177,9 @@ class DocumentationCoverage {
       (component) =>
         component.hasStory || component.missingPropTypes?.length === 0
     ).length;
+    const componentsWithStories = Object.values(componentsMap).filter(
+      (component) => component.hasStory
+    ).length;
     const storyBookOrPropTypesCoveragePercent =
       totalComponents === 0
         ? 0
@@ -183,6 +187,10 @@ class DocumentationCoverage {
             componentsWithStoriesOrPropTypes,
             totalComponents
           );
+    const storyBookCoveragePercent =
+      totalComponents === 0
+        ? 0
+        : getCoveragePercentage(componentsWithStories, totalComponents);
 
     const summary = {
       jsdocCoverage: {
@@ -192,7 +200,9 @@ class DocumentationCoverage {
       },
       JSXFileCoverage: {
         totalComponents,
+        componentsWithStories,
         componentsWithStoriesOrPropTypes,
+        storyBookCoveragePercent,
         storyBookOrPropTypesCoveragePercent,
         propTypesCoverage: getCoveragePercentage(
           numOfPropTypesDefined,

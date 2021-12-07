@@ -41,10 +41,21 @@ const printOutputSummary = (data) => {
       title: 'Total JSX Files',
       value: JSXFileCoverage.totalComponents,
     },
+
     {
       myId: 'componentsWithStoriesOrPropTypes',
       title: 'Fully Documented JSX Files',
       value: JSXFileCoverage.componentsWithStoriesOrPropTypes,
+    },
+    {
+      myId: 'componentsWithStories',
+      title: 'Components with stories',
+      value: JSXFileCoverage.componentsWithStories,
+    },
+    {
+      myId: 'storyBookCoveragePercent',
+      title: 'Storybook Coverage percent',
+      value: `${JSXFileCoverage.storyBookCoveragePercent}%`,
     },
     {
       myId: 'fullyDocumentedFileCoverage',
