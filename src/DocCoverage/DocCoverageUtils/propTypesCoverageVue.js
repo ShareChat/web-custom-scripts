@@ -4,14 +4,14 @@ class PropTypesCoverageVue {
   /**
    * finds missing prop types.
    * @param {object} ast
-   * @returns {Array} missingPropTypes
+   * @returns {boolean} hasPropTypes
    */
   static getMissingPropTypes(ast) {
     let hasPropTypes = false;
 
     /**
      * callback function to be passed in getAncestors
-     * finds all propTypes defined in a component and populates them in the propTypesArr
+     * checks if props are in object notation
      * @param {Array} ancestors
      */
     const checkIfPropsInObjectNotation = ([, parentObject]) => {
