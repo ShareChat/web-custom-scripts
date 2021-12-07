@@ -3,6 +3,7 @@
 const StorybookCoverage = require('./DocCoverageUtils/storybookCoverage');
 const PropTypesCoverageReact = require('./DocCoverageUtils/propTypesCoverageReact');
 const PropTypesCoverageSvelte = require('./DocCoverageUtils/propTypesCoverageSvelte');
+const PropTypesCoverageVue = require('./DocCoverageUtils/propTypesCoverageVue');
 const walk = require('../Utils/walk');
 const printOutputSummary = require('./DocCoverageUtils/printOutputSummary');
 const generateReportFile = require('./DocCoverageUtils/generateReportFile');
@@ -51,21 +52,23 @@ class DocumentationCoverage {
     };
 
     const populateComponentsMap = (astObject) => {
-      const isSvelte = config.framework === 'svelte';
       let isClassComponent;
       let totalProps;
       let missingPropTypes;
-      if (isSvelte) {
+      let hasPropTypesVue = false;
+      if (config.framework === 'svelte') {
         [totalProps, missingPropTypes] =
           PropTypesCoverageSvelte.getMissingPropTypes(astObject);
+      } else if (config.framework === 'vue') {
+        hasPropTypesVue = PropTypesCoverageVue.getMissingPropTypes(astObject);
       } else {
         [isClassComponent, totalProps, missingPropTypes] =
           PropTypesCoverageReact.getMissingPropTypes(astObject);
       }
 
-      const totalPropsLength = totalProps.length;
+      const totalPropsLength = totalProps?.length;
       const missingPropTypesLength = missingPropTypes
-        ? missingPropTypes.length
+        ? missingPropTypes?.length
         : null;
 
       numOfProps += totalPropsLength;
@@ -84,6 +87,16 @@ class DocumentationCoverage {
                 )
               : 0,
           };
+        case 'vue': {
+          numOfPropTypesDefined = hasPropTypesVue ? 1 : 0;
+          numOfProps = 1;
+          return {
+            hasStory: false,
+            hasAllPropTypes: hasPropTypesVue,
+            missingPropTypes: hasPropTypesVue ? [] : 'No proptypes found',
+            coverage: hasPropTypesVue ? 100 : 0,
+          };
+        }
         default:
           return {
             hasStory: false,
