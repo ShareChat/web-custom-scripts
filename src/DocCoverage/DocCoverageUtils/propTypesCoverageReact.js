@@ -126,7 +126,7 @@ class PropTypesCoverageReact {
             scope.type === 'FunctionDeclaration' &&
             scope.id.name === compName
           ) {
-            scope.params[0].properties.forEach((p) =>
+            scope.params[0].properties?.forEach((p) =>
               uniquePush(propsArr, p.key?.name)
             );
             getAncestors([], scope, 'props', populatePropsArray);
