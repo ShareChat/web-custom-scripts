@@ -29,7 +29,14 @@ class PropTypesCoverageReact {
       // for simplicity calling them grandParent and parent
       const grandParentValue = Object.values(greatGrandParentObject)[0];
       const parentKey = Object.keys(grandParentObject)[0];
-
+      const expressionTypes = [
+        'BinaryExpression',
+        'IfStatement',
+        'AssignmentExpression',
+        'MemberExpression',
+        'LogicalExpression',
+        'CallExpression',
+      ];
       if (parentKey === 'init') {
         if (grandParentValue.id.name) {
           uniquePush(propsArr, grandParentValue.id.name);
@@ -38,14 +45,7 @@ class PropTypesCoverageReact {
             uniquePush(propsArr, p.key?.name || p.value?.name)
           );
         }
-      } else if (
-        grandParentValue.type === 'BinaryExpression' ||
-        grandParentValue.type === 'IfStatement' ||
-        grandParentValue.type === 'AssignmentExpression' ||
-        grandParentValue.type === 'MemberExpression' ||
-        grandParentValue.type === 'LogicalExpression' ||
-        grandParentValue.type === 'CallExpression'
-      ) {
+      } else if (expressionTypes.includes(grandParentValue.type)) {
         if (grandParentValue[parentKey].property.name !== 'props') {
           uniquePush(propsArr, grandParentValue[parentKey].property.name);
         } else {

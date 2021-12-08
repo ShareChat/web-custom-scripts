@@ -25,7 +25,7 @@ class StorybookCoverage {
         const componentsMapKeys = Object.keys(componentsMap);
         for (let j = 0; j < componentsMapKeys.length; j += 1) {
           if (
-            componentsMapKeys[j] !== 'react' &&
+            fileAddress !== 'eact' &&
             componentsMapKeys[j].match(`${fileAddress}`)
           ) {
             componentsMap[componentsMapKeys[j]].hasStory = true;

@@ -73,17 +73,17 @@ const printOutputSummary = (data) => {
     'Completely Covered Files - combined score of JSDoc and JSX (Fully Covered Files)',
     [
       {
-        myId: 'numOfFiles',
+        myId: 'numOfScopes',
         title: 'Total Scopes',
         value: completelyCoveredFiles.totalExpectedCount,
       },
       {
-        myId: 'numOfFilesDocumented',
+        myId: 'numOfDocumentedScopes',
         title: 'Documented Scopes',
         value: completelyCoveredFiles.totalActualCount,
       },
       {
-        myId: 'storybookCoverage',
+        myId: 'coveragePercentage',
         title: 'Coverage Percentage',
         value: `${completelyCoveredFiles.totalCoveragePercent}`,
       },
@@ -94,17 +94,17 @@ const printOutputSummary = (data) => {
     'Total Coverage - combined score of JSDoc and JSX (PropTypes Coverage)',
     [
       {
-        myId: 'numOfFiles',
+        myId: 'numOfScopes',
         title: 'Total Scopes',
         value: totalCoverage.totalExpectedCount,
       },
       {
-        myId: 'numOfFilesDocumented',
+        myId: 'numOfDocumentedScopes',
         title: 'Documented Scopes',
         value: totalCoverage.totalActualCount,
       },
       {
-        myId: 'storybookCoverage',
+        myId: 'coveragePercentage',
         title: 'Coverage Percentage',
         value: `${totalCoverage.totalCoveragePercent}`,
       },
