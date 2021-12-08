@@ -98,12 +98,23 @@ class PropTypesCoverageReact {
         }
       });
       if (hasPropTypes) {
-        ast.body.forEach((scope) => {
+        const populatePropsArray2 = (scope) => {
           if (
             scope.type === 'VariableDeclaration' &&
             scope.declarations[0].id.name === compName
           ) {
-            if (scope.declarations[0].init.params?.[0]?.name === 'props') {
+            if (
+              scope.declarations[0].init.left?.type ===
+              'ArrowFunctionExpression'
+            ) {
+              scope.declarations[0].init.left.params[0].properties.forEach(
+                (p) => {
+                  uniquePush(propsArr, p.key?.name);
+                }
+              );
+            } else if (
+              scope.declarations[0].init.params?.[0]?.name === 'props'
+            ) {
               // not destructured
               scope.declarations[0].init.body.body.forEach((s) => {
                 if (
@@ -130,6 +141,17 @@ class PropTypesCoverageReact {
               uniquePush(propsArr, p.key?.name)
             );
             getAncestors([], scope, 'props', populatePropsArray);
+          }
+        };
+
+        ast.body.forEach((scope) => {
+          if (
+            scope.type === 'ExportDefaultDeclaration' &&
+            scope.declaration.id?.name === compName
+          ) {
+            populatePropsArray2(scope.declaration);
+          } else {
+            populatePropsArray2(scope);
           }
         });
       }
