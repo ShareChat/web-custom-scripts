@@ -67,9 +67,7 @@ class DocumentationCoverage {
       }
 
       const totalPropsLength = totalProps?.length;
-      const missingPropTypesLength = missingPropTypes
-        ? missingPropTypes?.length
-        : null;
+      const missingPropTypesLength = missingPropTypes?.length;
 
       numOfProps += totalPropsLength;
       numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
@@ -100,10 +98,9 @@ class DocumentationCoverage {
         default:
           return {
             hasStory: false,
-            hasAllPropTypes:
-              missingPropTypesLength !== null
-                ? missingPropTypesLength === 0
-                : false,
+            hasAllPropTypes: totalPropsLength
+              ? missingPropTypesLength === 0
+              : false,
             componentType: isClassComponent ? 'Class Based' : 'Functional',
             missingPropTypes:
               totalPropsLength && totalPropsLength !== missingPropTypesLength
@@ -148,8 +145,7 @@ class DocumentationCoverage {
         if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
           const astObject = generateAst(filePath, config);
           if (astObject !== null) {
-            componentsMap[filePath.replace('react', '')] =
-              populateComponentsMap(astObject);
+            componentsMap[filePath] = populateComponentsMap(astObject);
           }
         }
         totalComponents = Object.keys(componentsMap).length;

@@ -139,11 +139,7 @@ class PropTypesCoverageReact {
       (prop) => !propTypesArr.includes(prop)
     );
 
-    return [
-      isClassComponent,
-      propsArr,
-      !isClassComponent && !hasPropTypes ? null : missingPropsArr,
-    ];
+    return [isClassComponent, propsArr, missingPropsArr];
   }
 }
 

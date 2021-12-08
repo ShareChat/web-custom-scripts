@@ -18,13 +18,16 @@ class StorybookCoverage {
         const lastIndex = linesWithImports[i].lastIndexOf(typeOfQuoteUsed);
         const fileAddress = linesWithImports[i]
           .slice(
-            startIndex + 1, // to remove alias @/ or .. or ./
+            startIndex + 2, // to remove alias @/ or .. or ./
             lastIndex
           )
           .replace(/\.\.\//g, '');
         const componentsMapKeys = Object.keys(componentsMap);
         for (let j = 0; j < componentsMapKeys.length; j += 1) {
-          if (componentsMapKeys[j].match(`${fileAddress}`)) {
+          if (
+            componentsMapKeys[j] !== 'react' &&
+            componentsMapKeys[j].match(`${fileAddress}`)
+          ) {
             componentsMap[componentsMapKeys[j]].hasStory = true;
             componentsMap[componentsMapKeys[j]].coverage = 100;
           }
