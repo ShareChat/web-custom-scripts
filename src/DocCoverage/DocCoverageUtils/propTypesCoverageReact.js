@@ -29,6 +29,8 @@ class PropTypesCoverageReact {
       // for simplicity calling them grandParent and parent
       const grandParentValue = Object.values(greatGrandParentObject)[0];
       const parentKey = Object.keys(grandParentObject)[0];
+      const parentValue = Object.values(grandParentObject)[0];
+
       const expressionTypes = [
         'BinaryExpression',
         'IfStatement',
@@ -46,15 +48,19 @@ class PropTypesCoverageReact {
           );
         }
       } else if (expressionTypes.includes(grandParentValue.type)) {
-        if (grandParentValue[parentKey].property.name !== 'props') {
-          uniquePush(propsArr, grandParentValue[parentKey].property.name);
+        if (parentValue.property.name !== 'props') {
+          uniquePush(propsArr, parentValue.property.name);
         } else {
           uniquePush(propsArr, grandParentValue.property.name);
         }
       } else if (grandParentValue.property) {
         uniquePush(propsArr, grandParentValue.property.name);
+      } else if (grandParentValue.properties) {
+        grandParentValue.properties.forEach((p) => {
+          if (p.key?.name !== 'props') uniquePush(propsArr, p.key?.name);
+        });
       } else {
-        grandParentValue.properties?.forEach((p) => {
+        parentValue.id?.properties?.forEach((p) => {
           if (p.key?.name !== 'props') uniquePush(propsArr, p.key?.name);
         });
       }
@@ -148,6 +154,11 @@ class PropTypesCoverageReact {
           if (
             scope.type === 'ExportDefaultDeclaration' &&
             scope.declaration.id?.name === compName
+          ) {
+            populatePropsArray2(scope.declaration);
+          } else if (
+            scope.type === 'ExportNamedDeclaration' &&
+            scope.declaration?.declarations?.[0].id?.name === compName
           ) {
             populatePropsArray2(scope.declaration);
           } else {
