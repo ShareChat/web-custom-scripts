@@ -39,6 +39,7 @@ class DocumentationCoverage {
     let totalComponents = 0;
     let numOfProps = 0;
     let numOfPropTypesDefined = 0;
+    let hasPropTypesVue = false;
 
     const isExcluded = (filePath, excludedPaths) => {
       if (excludedPaths && excludedPaths.length > 0) {
@@ -55,7 +56,7 @@ class DocumentationCoverage {
       let isClassComponent;
       let totalProps;
       let missingPropTypes;
-      let hasPropTypesVue = false;
+
       if (config.framework === 'svelte') {
         [totalProps, missingPropTypes] =
           PropTypesCoverageSvelte.getMissingPropTypes(astObject);
@@ -69,11 +70,10 @@ class DocumentationCoverage {
       const totalPropsLength = totalProps?.length;
       const missingPropTypesLength = missingPropTypes?.length;
 
-      numOfProps += totalPropsLength;
-      numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
-
       switch (config.framework) {
-        case 'svelte':
+        case 'svelte': {
+          numOfProps += totalPropsLength;
+          numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
           return {
             hasStory: false,
             hasAllPropTypes: missingPropTypesLength === 0,
@@ -85,19 +85,26 @@ class DocumentationCoverage {
                 )
               : 0,
           };
+        }
         case 'vue': {
-          numOfPropTypesDefined = hasPropTypesVue ? 1 : 0;
-          numOfProps = 1;
+          numOfPropTypesDefined += hasPropTypesVue ? 1 : 0;
+          numOfProps += 1;
           return {
             hasStory: false,
+            hasPropTypesVue,
+            numOfPropTypesDefined,
+            numOfProps,
             hasAllPropTypes: hasPropTypesVue,
             missingPropTypes: hasPropTypesVue ? [] : 'No proptypes found',
             coverage: hasPropTypesVue ? 100 : 0,
           };
         }
-        default:
+        default: {
+          numOfProps += totalPropsLength;
+          numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
           return {
             hasStory: false,
+            props: totalProps,
             hasAllPropTypes: totalPropsLength
               ? missingPropTypesLength === 0
               : false,
@@ -113,13 +120,17 @@ class DocumentationCoverage {
                 )
               : 0,
           };
+        }
       }
     };
 
     walk(config.source, (filePath) => {
       let isJSXFile = false;
       // Find total scopes(expectCount) and documented scopes(actualCount) in non JSX files
-      if (!isExcluded(filePath, config.excludedPaths)) {
+      if (
+        !isExcluded(filePath, config.excludedPaths) &&
+        !isExcluded(filePath, config.foldersWithJSXFiles)
+      ) {
         // generates ast doc
         const response = generateAstWithComments(filePath, config);
         if (response) {
