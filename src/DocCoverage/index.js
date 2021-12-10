@@ -91,9 +91,6 @@ class DocumentationCoverage {
           numOfProps += 1;
           return {
             hasStory: false,
-            hasPropTypesVue,
-            numOfPropTypesDefined,
-            numOfProps,
             hasAllPropTypes: hasPropTypesVue,
             missingPropTypes: hasPropTypesVue ? [] : 'No proptypes found',
             coverage: hasPropTypesVue ? 100 : 0,
@@ -104,7 +101,6 @@ class DocumentationCoverage {
           numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
           return {
             hasStory: false,
-            props: totalProps,
             hasAllPropTypes: totalPropsLength
               ? missingPropTypesLength === 0
               : false,

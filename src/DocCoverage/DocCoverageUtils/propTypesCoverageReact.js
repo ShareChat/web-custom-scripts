@@ -8,6 +8,7 @@ class PropTypesCoverageReact {
    */
   static getMissingPropTypes(ast) {
     let hasPropTypes = false;
+    let compName;
     const propsArr = [];
     const propTypesArr = [];
     let isClassComponent = false;
@@ -19,7 +20,7 @@ class PropTypesCoverageReact {
 
     /**
      * callback function to be passed in getAncestors
-     * finds all props used in a component and populates them in the propsArr
+     * finds props used in a component and populates them in the propsArr
      * @param {Array} ancestors
      */
     const populatePropsArray = ([
@@ -67,11 +68,56 @@ class PropTypesCoverageReact {
     };
 
     /**
+     * finds all props used in a functional component and populates them in the propsArr
+     * @param {Object} scope
+     */
+    const populatePropsArrayFunctionalComp = (scope) => {
+      if (
+        scope.type === 'VariableDeclaration' &&
+        scope.declarations[0].id.name === compName
+      ) {
+        if (
+          scope.declarations[0].init.left?.type === 'ArrowFunctionExpression'
+        ) {
+          scope.declarations[0].init.left.params[0].properties.forEach((p) => {
+            uniquePush(propsArr, p.key?.name);
+          });
+        } else if (scope.declarations[0].init.params?.[0]?.name === 'props') {
+          // not destructured
+          scope.declarations[0].init.body.body.forEach((s) => {
+            if (
+              s.type === 'VariableDeclaration' &&
+              s.declarations[0].init.name === 'props'
+            ) {
+              s.declarations[0].id.properties.forEach((p) =>
+                uniquePush(propsArr, p.key?.name)
+              );
+            }
+          });
+        } else {
+          // destructured
+          scope.declarations[0].init.params?.[0].properties.forEach((p) =>
+            uniquePush(propsArr, p.key?.name)
+          );
+        }
+        getAncestors([], scope, 'props', populatePropsArray);
+      } else if (
+        scope.type === 'FunctionDeclaration' &&
+        scope.id.name === compName
+      ) {
+        scope.params[0].properties?.forEach((p) =>
+          uniquePush(propsArr, p.key?.name)
+        );
+      }
+      getAncestors([], scope, 'props', populatePropsArray);
+    };
+
+    /**
      * callback function to be passed in getAncestors
-     * finds all propTypes defined in a Class based component and populates them in the propTypesArr
+     * finds all propTypes defined inside a Class based component (using static syntax) and populates them in the propTypesArr
      * @param {Array} ancestors
      */
-    const populatePropTypesArray = ([, parentObject]) => {
+    const populatePropTypesArrayStatic = ([, parentObject]) => {
       hasPropTypes = true;
       const parentValue = Object.values(parentObject)[0];
       if (
@@ -84,14 +130,13 @@ class PropTypesCoverageReact {
       }
     };
 
-    getAncestors([], ast, 'ClassDeclaration', () => {
-      isClassComponent = true;
-      getAncestors([], ast, 'props', populatePropsArray);
-      getAncestors([], ast, 'propTypes', populatePropTypesArray);
-    });
-    if (!isClassComponent) {
-      let compName;
-      ast.body.forEach((scope) => {
+    /**
+     * callback function to be passed in getAncestors
+     * finds all propTypes defined outside a Class based component and populates them in the propTypesArr
+     * @param {Array} ancestors
+     */
+    const populatePropTypesArray = (astObj) => {
+      astObj.body.forEach((scope) => {
         if (
           scope.type === 'ExpressionStatement' &&
           scope.expression.left?.property?.name === 'propTypes'
@@ -103,66 +148,31 @@ class PropTypesCoverageReact {
           );
         }
       });
-      if (hasPropTypes) {
-        const populatePropsArray2 = (scope) => {
-          if (
-            scope.type === 'VariableDeclaration' &&
-            scope.declarations[0].id.name === compName
-          ) {
-            if (
-              scope.declarations[0].init.left?.type ===
-              'ArrowFunctionExpression'
-            ) {
-              scope.declarations[0].init.left.params[0].properties.forEach(
-                (p) => {
-                  uniquePush(propsArr, p.key?.name);
-                }
-              );
-            } else if (
-              scope.declarations[0].init.params?.[0]?.name === 'props'
-            ) {
-              // not destructured
-              scope.declarations[0].init.body.body.forEach((s) => {
-                if (
-                  s.type === 'VariableDeclaration' &&
-                  s.declarations[0].init.name === 'props'
-                ) {
-                  s.declarations[0].id.properties.forEach((p) =>
-                    uniquePush(propsArr, p.key?.name)
-                  );
-                }
-              });
-            } else {
-              // destructured
-              scope.declarations[0].init.params?.[0].properties.forEach((p) =>
-                uniquePush(propsArr, p.key?.name)
-              );
-            }
-            getAncestors([], scope, 'props', populatePropsArray);
-          } else if (
-            scope.type === 'FunctionDeclaration' &&
-            scope.id.name === compName
-          ) {
-            scope.params[0].properties?.forEach((p) =>
-              uniquePush(propsArr, p.key?.name)
-            );
-            getAncestors([], scope, 'props', populatePropsArray);
-          }
-        };
+    };
 
+    getAncestors([], ast, 'ClassDeclaration', () => {
+      isClassComponent = true;
+      getAncestors([], ast, 'props', populatePropsArray);
+      getAncestors([], ast, 'propTypes', populatePropTypesArrayStatic);
+      populatePropTypesArray(ast);
+    });
+
+    if (!isClassComponent) {
+      populatePropTypesArray(ast);
+      if (hasPropTypes) {
         ast.body.forEach((scope) => {
           if (
             scope.type === 'ExportDefaultDeclaration' &&
             scope.declaration.id?.name === compName
           ) {
-            populatePropsArray2(scope.declaration);
+            populatePropsArrayFunctionalComp(scope.declaration);
           } else if (
             scope.type === 'ExportNamedDeclaration' &&
             scope.declaration?.declarations?.[0].id?.name === compName
           ) {
-            populatePropsArray2(scope.declaration);
+            populatePropsArrayFunctionalComp(scope.declaration);
           } else {
-            populatePropsArray2(scope);
+            populatePropsArrayFunctionalComp(scope);
           }
         });
       }
