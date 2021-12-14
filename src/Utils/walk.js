@@ -1,7 +1,8 @@
 const fs = require('fs-extra');
 const path = require('path');
+
 /**
- * walk recursive in directory.
+ * walk recursively in directory.
  * @param {string} dirPath - target directory path.
  * @param {function(entryPath: string)} callback - callback for each file.
  */

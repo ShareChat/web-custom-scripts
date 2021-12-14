@@ -30,7 +30,7 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
   4. foldersWithJSXFiles - Array of folder names containing all UI components.
   5. storiesFolderPath - Path to the stories folder to be provided if it is outside the source folder.
   6. ecmaVersion - ECMA Script Version (required for parsing into ast), by default latest is used.
-  7. framework - framework used (currently react and svelte are supported), by default react.
+  7. framework - framework used (currently react, vue and svelte are supported), by default react.
 
 ```
 

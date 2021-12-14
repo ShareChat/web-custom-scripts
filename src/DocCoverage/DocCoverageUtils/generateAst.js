@@ -9,7 +9,7 @@ const isIgnored = require('./checkIfIgnored');
  */
 const generateAst = (filePath, config) => {
   const file = fs.readFileSync(filePath, 'utf8');
-  if (!isIgnored(file)) {
+  if (!isIgnored(file, config.framework)) {
     const comments = [];
     const tokens = [];
     const ast = acornLoose.parse(file, {

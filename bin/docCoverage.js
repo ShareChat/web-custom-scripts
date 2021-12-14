@@ -63,6 +63,7 @@ class DocumentationCoverageCli {
           '/containers/',
           '/__test__/',
           '/config./',
+          '__snapshots__',
         ],
         excludedComponentPaths: ['/__test__/'],
         foldersWithJSXFiles: ['components', 'containers'],

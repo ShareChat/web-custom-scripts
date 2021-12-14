@@ -1,4 +1,9 @@
 const getAncestors = require('./getAncestors');
+const {
+  declarationTypes,
+  expressionTypes,
+  astConstants,
+} = require('../Constants/constants');
 
 class PropTypesCoverageReact {
   /**
@@ -8,6 +13,7 @@ class PropTypesCoverageReact {
    */
   static getMissingPropTypes(ast) {
     let hasPropTypes = false;
+    let compName;
     const propsArr = [];
     const propTypesArr = [];
     let isClassComponent = false;
@@ -19,7 +25,7 @@ class PropTypesCoverageReact {
 
     /**
      * callback function to be passed in getAncestors
-     * finds all props used in a component and populates them in the propsArr
+     * finds props used in a component and populates them in the propsArr
      * @param {Array} ancestors
      */
     const populatePropsArray = ([
@@ -29,8 +35,17 @@ class PropTypesCoverageReact {
       // for simplicity calling them grandParent and parent
       const grandParentValue = Object.values(greatGrandParentObject)[0];
       const parentKey = Object.keys(grandParentObject)[0];
+      const parentValue = Object.values(grandParentObject)[0];
 
-      if (parentKey === 'init') {
+      const expressionTypesArr = [
+        expressionTypes.BINARY_EXPRESSION,
+        expressionTypes.IF_STATEMENT,
+        expressionTypes.ASSIGNMENT_EXPRESSION,
+        expressionTypes.MEMBER_EXPRESSION,
+        expressionTypes.LOGICAL_EXPRESSION,
+        expressionTypes.CALL_EXPRESSION,
+      ];
+      if (parentKey === astConstants.INIT) {
         if (grandParentValue.id.name) {
           uniquePush(propsArr, grandParentValue.id.name);
         } else {
@@ -38,39 +53,88 @@ class PropTypesCoverageReact {
             uniquePush(propsArr, p.key?.name || p.value?.name)
           );
         }
-      } else if (
-        grandParentValue.type === 'BinaryExpression' ||
-        grandParentValue.type === 'IfStatement' ||
-        grandParentValue.type === 'AssignmentExpression' ||
-        grandParentValue.type === 'MemberExpression' ||
-        grandParentValue.type === 'LogicalExpression' ||
-        grandParentValue.type === 'CallExpression'
-      ) {
-        if (grandParentValue[parentKey].property.name !== 'props') {
-          uniquePush(propsArr, grandParentValue[parentKey].property.name);
+      } else if (expressionTypesArr.includes(grandParentValue.type)) {
+        if (parentValue.property.name !== astConstants.PROPS) {
+          uniquePush(propsArr, parentValue.property.name);
         } else {
           uniquePush(propsArr, grandParentValue.property.name);
         }
       } else if (grandParentValue.property) {
         uniquePush(propsArr, grandParentValue.property.name);
+      } else if (grandParentValue.properties) {
+        grandParentValue.properties.forEach((p) => {
+          if (p.key?.name !== astConstants.PROPS)
+            uniquePush(propsArr, p.key?.name);
+        });
       } else {
-        grandParentValue.properties?.forEach((p) => {
-          if (p.key?.name !== 'props') uniquePush(propsArr, p.key?.name);
+        parentValue.id?.properties?.forEach((p) => {
+          if (p.key?.name !== astConstants.PROPS)
+            uniquePush(propsArr, p.key?.name);
         });
       }
     };
 
     /**
+     * finds all props used in a functional component and populates them in the propsArr
+     * @param {Object} scope
+     */
+    const populatePropsArrayFunctionalComp = (scope) => {
+      if (
+        scope.type === declarationTypes.VARIABLE_DECLARATION &&
+        scope.declarations[0].id.name === compName
+      ) {
+        if (
+          scope.declarations[0].init?.left?.type ===
+          expressionTypes.ARROW_FUNCTION_EXPRESSION
+        ) {
+          scope.declarations[0].init?.left?.params[0].properties.forEach(
+            (p) => {
+              uniquePush(propsArr, p.key?.name);
+            }
+          );
+        } else if (
+          scope.declarations[0].init.params?.[0]?.name === astConstants.PROPS
+        ) {
+          // not destructured
+          scope.declarations[0].init.body.body.forEach((s) => {
+            if (
+              s.type === declarationTypes.VARIABLE_DECLARATION &&
+              s.declarations[0].init.name === astConstants.PROPS
+            ) {
+              s.declarations[0].id.properties.forEach((p) =>
+                uniquePush(propsArr, p.key?.name)
+              );
+            }
+          });
+        } else {
+          // destructured
+          scope.declarations[0].init.params?.[0].properties.forEach((p) =>
+            uniquePush(propsArr, p.key?.name)
+          );
+        }
+        getAncestors([], scope, astConstants.PROPS, populatePropsArray);
+      } else if (
+        scope.type === declarationTypes.FUNCTION_DECLARATION &&
+        scope.id.name === compName
+      ) {
+        scope.params[0].properties?.forEach((p) =>
+          uniquePush(propsArr, p.key?.name)
+        );
+      }
+      getAncestors([], scope, astConstants.PROPS, populatePropsArray);
+    };
+
+    /**
      * callback function to be passed in getAncestors
-     * finds all propTypes defined in a Class based component and populates them in the propTypesArr
+     * finds all propTypes defined inside a Class based component (using static syntax) and populates them in the propTypesArr
      * @param {Array} ancestors
      */
-    const populatePropTypesArray = ([, parentObject]) => {
+    const populatePropTypesArrayStatic = ([, parentObject]) => {
       hasPropTypes = true;
       const parentValue = Object.values(parentObject)[0];
       if (
-        parentValue.type === 'PropertyDefinition' &&
-        parentValue.key.name === 'propTypes'
+        parentValue.type === astConstants.PROPERTY_DEFINITION &&
+        parentValue.key.name === astConstants.PROP_TYPES
       ) {
         parentValue.value.properties.forEach((property) =>
           uniquePush(propTypesArr, property.key.name)
@@ -78,17 +142,16 @@ class PropTypesCoverageReact {
       }
     };
 
-    getAncestors([], ast, 'ClassDeclaration', () => {
-      isClassComponent = true;
-      getAncestors([], ast, 'props', populatePropsArray);
-      getAncestors([], ast, 'propTypes', populatePropTypesArray);
-    });
-    if (!isClassComponent) {
-      let compName;
-      ast.body.forEach((scope) => {
+    /**
+     * callback function to be passed in getAncestors
+     * finds all propTypes defined outside a Class based component and populates them in the propTypesArr
+     * @param {Array} ancestors
+     */
+    const populatePropTypesArray = (astObj) => {
+      astObj.body.forEach((scope) => {
         if (
           scope.type === 'ExpressionStatement' &&
-          scope.expression.left?.property?.name === 'propTypes'
+          scope.expression.left?.property?.name === astConstants.PROP_TYPES
         ) {
           hasPropTypes = true;
           compName = scope.expression.left.object.name;
@@ -97,39 +160,36 @@ class PropTypesCoverageReact {
           );
         }
       });
+    };
+
+    getAncestors([], ast, declarationTypes.CLASS_DECLARATION, () => {
+      isClassComponent = true;
+      getAncestors([], ast, astConstants.PROPS, populatePropsArray);
+      getAncestors(
+        [],
+        ast,
+        astConstants.PROP_TYPES,
+        populatePropTypesArrayStatic
+      );
+      populatePropTypesArray(ast);
+    });
+
+    if (!isClassComponent) {
+      populatePropTypesArray(ast);
       if (hasPropTypes) {
         ast.body.forEach((scope) => {
           if (
-            scope.type === 'VariableDeclaration' &&
-            scope.declarations[0].id.name === compName
+            scope.type === declarationTypes.EXPORT_DEFAULT_DECLARATION &&
+            scope.declaration.id?.name === compName
           ) {
-            if (scope.declarations[0].init.params[0]?.name === 'props') {
-              // not destructured
-              scope.declarations[0].init.body.body.forEach((s) => {
-                if (
-                  s.type === 'VariableDeclaration' &&
-                  s.declarations[0].init.name === 'props'
-                ) {
-                  s.declarations[0].id.properties.forEach((p) =>
-                    uniquePush(propsArr, p.key?.name)
-                  );
-                }
-              });
-            } else {
-              // destructured
-              scope.declarations[0].init.params[0].properties.forEach((p) =>
-                uniquePush(propsArr, p.key?.name)
-              );
-            }
-            getAncestors([], scope, 'props', populatePropsArray);
+            populatePropsArrayFunctionalComp(scope.declaration);
           } else if (
-            scope.type === 'FunctionDeclaration' &&
-            scope.id.name === compName
+            scope.type === declarationTypes.EXPORT_NAMED_DECLARATION &&
+            scope.declaration?.declarations?.[0].id?.name === compName
           ) {
-            scope.params[0].properties.forEach((p) =>
-              uniquePush(propsArr, p.key?.name)
-            );
-            getAncestors([], scope, 'props', populatePropsArray);
+            populatePropsArrayFunctionalComp(scope.declaration);
+          } else {
+            populatePropsArrayFunctionalComp(scope);
           }
         });
       }
@@ -139,11 +199,7 @@ class PropTypesCoverageReact {
       (prop) => !propTypesArr.includes(prop)
     );
 
-    return [
-      isClassComponent,
-      propsArr,
-      !isClassComponent && !hasPropTypes ? null : missingPropsArr,
-    ];
+    return [isClassComponent, propsArr, missingPropsArr];
   }
 }
 

@@ -15,7 +15,12 @@ const printOutputSummary = (data) => {
     completelyCoveredFiles,
   } = data;
 
-  console.log('###########################################################\n');
+  console.log('\n###########################################################');
+  console.log('Note: A detailed json is generated in doc-coverage directory');
+
+  console.log(
+    'Note: Component Files refer to JSX files for react and .vue/.svelte files for vue and svelte respectively'
+  );
 
   generateConsoleTable('JsDoc Coverage', [
     {
@@ -35,16 +40,27 @@ const printOutputSummary = (data) => {
     },
   ]);
 
-  generateConsoleTable('JSX File Coverage', [
+  generateConsoleTable('Components File Coverage', [
     {
       myId: 'totalComponents',
-      title: 'Total JSX Files',
+      title: 'Total Component Files',
       value: JSXFileCoverage.totalComponents,
     },
+
     {
       myId: 'componentsWithStoriesOrPropTypes',
-      title: 'Fully Documented JSX Files',
+      title: 'Fully Documented Component Files',
       value: JSXFileCoverage.componentsWithStoriesOrPropTypes,
+    },
+    {
+      myId: 'componentsWithStories',
+      title: 'Components with stories',
+      value: JSXFileCoverage.componentsWithStories,
+    },
+    {
+      myId: 'storyBookCoveragePercent',
+      title: 'Storybook Coverage percent',
+      value: `${JSXFileCoverage.storyBookCoveragePercent}%`,
     },
     {
       myId: 'fullyDocumentedFileCoverage',
@@ -59,20 +75,20 @@ const printOutputSummary = (data) => {
   ]);
 
   generateConsoleTable(
-    'Completely Covered Files - combined score of JSDoc and JSX (Fully Covered Files)',
+    'Completely Covered Files - combined score of JSDoc and Component Files(Fully Covered Files)',
     [
       {
-        myId: 'numOfFiles',
+        myId: 'numOfScopes',
         title: 'Total Scopes',
         value: completelyCoveredFiles.totalExpectedCount,
       },
       {
-        myId: 'numOfFilesDocumented',
+        myId: 'numOfDocumentedScopes',
         title: 'Documented Scopes',
         value: completelyCoveredFiles.totalActualCount,
       },
       {
-        myId: 'storybookCoverage',
+        myId: 'coveragePercentage',
         title: 'Coverage Percentage',
         value: `${completelyCoveredFiles.totalCoveragePercent}`,
       },
@@ -80,27 +96,26 @@ const printOutputSummary = (data) => {
   );
 
   generateConsoleTable(
-    'Total Coverage - combined score of JSDoc and JSX (PropTypes Coverage)',
+    'Total Coverage - combined score of JSDoc and Component Files(PropTypes Coverage)',
     [
       {
-        myId: 'numOfFiles',
+        myId: 'numOfScopes',
         title: 'Total Scopes',
         value: totalCoverage.totalExpectedCount,
       },
       {
-        myId: 'numOfFilesDocumented',
+        myId: 'numOfDocumentedScopes',
         title: 'Documented Scopes',
         value: totalCoverage.totalActualCount,
       },
       {
-        myId: 'storybookCoverage',
+        myId: 'coveragePercentage',
         title: 'Coverage Percentage',
         value: `${totalCoverage.totalCoveragePercent}`,
       },
     ]
   );
 
-  console.log('Note: A detailed json is generated in doc-coverage directory');
   console.log('\n###########################################################');
 };
 

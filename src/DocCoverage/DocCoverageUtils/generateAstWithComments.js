@@ -2,16 +2,20 @@ const fs = require('fs-extra');
 const acornLoose = require('acorn-loose');
 const escodegen = require('escodegen');
 const getCoveragePercentage = require('./getCoveragePercentage');
+const { declarationTypes, expressionTypes } = require('../Constants/constants');
 
 const createHash = (ast, filePath) => {
-  const functionTypes = ['FunctionExpression', 'ArrowFunctionExpression'];
+  const functionTypes = [
+    expressionTypes.FUNCTION_EXPRESSION,
+    expressionTypes.ARROW_FUNCTION_EXPRESSION,
+  ];
   const hash = {};
   let expectedCount = 0;
   let actualCount = 0;
 
   const filterDeclarationTypes = (e) => {
     switch (e.type) {
-      case 'FunctionDeclaration':
+      case declarationTypes.FUNCTION_DECLARATION:
         return {
           functionName: e.id.name,
           functionType: e.type,
@@ -19,16 +23,16 @@ const createHash = (ast, filePath) => {
             e.leadingComments?.filter((i) => i.value.startsWith('*\n')).length >
             0,
         };
-      case 'VariableDeclaration':
-      case 'ExportNamedDeclaration':
-      case 'ExportDefaultDeclaration': {
+      case declarationTypes.VARIABLE_DECLARATION:
+      case declarationTypes.EXPORT_NAMED_DECLARATION:
+      case declarationTypes.EXPORT_DEFAULT_DECLARATION: {
         let subobj = {};
 
-        if (e.type === 'VariableDeclaration') {
+        if (e.type === declarationTypes.VARIABLE_DECLARATION) {
           subobj = e.declarations?.[0];
         }
 
-        if (e.type === 'ExportNamedDeclaration') {
+        if (e.type === declarationTypes.EXPORT_NAMED_DECLARATION) {
           if (e.declaration?.declarations) {
             subobj = e.declaration?.declarations?.[0];
           } else if (e.declaration) {
@@ -36,13 +40,13 @@ const createHash = (ast, filePath) => {
           }
         }
 
-        if (e.type === 'ExportDefaultDeclaration' && e.id) {
+        if (e.type === declarationTypes.EXPORT_DEFAULT_DECLARATION && e.id) {
           subobj = e.declaration;
         }
 
         if (
           (subobj?.init?.type && functionTypes.includes(subobj.init.type)) ||
-          subobj.type === 'FunctionDeclaration'
+          subobj.type === declarationTypes.FUNCTION_DECLARATION
         ) {
           return {
             functionName: subobj.id.name,
