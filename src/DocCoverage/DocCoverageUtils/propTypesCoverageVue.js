@@ -1,4 +1,5 @@
 const getAncestors = require('./getAncestors');
+const { expressionTypes, astConstants } = require('../Constants/constants');
 
 class PropTypesCoverageVue {
   /**
@@ -16,12 +17,12 @@ class PropTypesCoverageVue {
      */
     const checkIfPropsInObjectNotation = ([, parentObject]) => {
       const parentValue = Object.values(parentObject)[0];
-      if (parentValue.value?.type === 'ObjectExpression') {
+      if (parentValue.value?.type === expressionTypes.OBJECT_EXPRESSION) {
         hasPropTypes = true;
       }
     };
 
-    getAncestors([], ast, 'props', checkIfPropsInObjectNotation);
+    getAncestors([], ast, astConstants.PROPS, checkIfPropsInObjectNotation);
 
     return hasPropTypes;
   }

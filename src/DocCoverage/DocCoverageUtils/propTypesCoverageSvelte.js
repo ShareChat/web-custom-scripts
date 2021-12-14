@@ -1,4 +1,5 @@
 const getAncestors = require('./getAncestors');
+const { declarationTypes, astConstants } = require('../Constants/constants');
 
 class PropTypesCoverageSvelte {
   /**
@@ -21,7 +22,7 @@ class PropTypesCoverageSvelte {
      */
     const populatePropsArray = (astObject) => {
       astObject.body.forEach((node) => {
-        if (node.type === 'ExportNamedDeclaration') {
+        if (node.type === declarationTypes.EXPORT_NAMED_DECLARATION) {
           node.declaration?.declarations?.map((declaration) =>
             uniquePush(propsArr, declaration.id.name)
           );
@@ -37,8 +38,8 @@ class PropTypesCoverageSvelte {
     const populatePropTypesArray = ([, parentObject]) => {
       const parentValue = Object.values(parentObject)[0];
       if (
-        parentValue.type === 'VariableDeclarator' &&
-        parentValue.id.name === 'propTypes'
+        parentValue.type === declarationTypes.VARIABLE_DECLARATOR &&
+        parentValue.id.name === astConstants.PROP_TYPES
       ) {
         parentValue.init.properties.forEach((property) =>
           uniquePush(propTypesArr, property.key.name)
@@ -47,7 +48,7 @@ class PropTypesCoverageSvelte {
     };
 
     populatePropsArray(ast);
-    getAncestors([], ast, 'propTypes', populatePropTypesArray);
+    getAncestors([], ast, astConstants.PROP_TYPES, populatePropTypesArray);
 
     const missingPropsArr = propsArr.filter(
       (prop) => !propTypesArr.includes(prop)
