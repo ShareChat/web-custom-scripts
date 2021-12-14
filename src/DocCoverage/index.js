@@ -10,6 +10,7 @@ const generateReportFile = require('./DocCoverageUtils/generateReportFile');
 const generateAst = require('./DocCoverageUtils/generateAst');
 const generateAstWithComments = require('./DocCoverageUtils/generateAstWithComments');
 const getCoveragePercentage = require('./DocCoverageUtils/getCoveragePercentage');
+const { frameworks } = require('./Constants/constants');
 
 class DocumentationCoverage {
   static getFunctionCount(response) {
@@ -57,10 +58,10 @@ class DocumentationCoverage {
       let totalProps;
       let missingPropTypes;
 
-      if (config.framework === 'svelte') {
+      if (config.framework === frameworks.SVELTE) {
         [totalProps, missingPropTypes] =
           PropTypesCoverageSvelte.getMissingPropTypes(astObject);
-      } else if (config.framework === 'vue') {
+      } else if (config.framework === frameworks.VUE) {
         hasPropTypesVue = PropTypesCoverageVue.getMissingPropTypes(astObject);
       } else {
         [isClassComponent, totalProps, missingPropTypes] =
@@ -71,7 +72,7 @@ class DocumentationCoverage {
       const missingPropTypesLength = missingPropTypes?.length;
 
       switch (config.framework) {
-        case 'svelte': {
+        case frameworks.SVELTE: {
           numOfProps += totalPropsLength;
           numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
           return {
@@ -86,7 +87,7 @@ class DocumentationCoverage {
               : 0,
           };
         }
-        case 'vue': {
+        case frameworks.VUE: {
           numOfPropTypesDefined += hasPropTypesVue ? 1 : 0;
           numOfProps += 1;
           return {

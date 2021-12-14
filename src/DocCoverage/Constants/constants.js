@@ -26,8 +26,18 @@ const astConstants = {
   INIT: 'init',
 };
 
+const frameworks = {
+  REACT: 'react',
+  VUE: 'vue',
+  SVELTE: 'svelte',
+};
+
+const docIgnoreComment = '/* !Doc Coverage Ignore */';
+
 module.exports = {
   declarationTypes,
   expressionTypes,
   astConstants,
+  frameworks,
+  docIgnoreComment,
 };
