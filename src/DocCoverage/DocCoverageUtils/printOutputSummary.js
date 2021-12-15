@@ -10,7 +10,7 @@ const generateConsoleTable = (title, data) => {
 const printOutputSummary = (data) => {
   const {
     jsdocCoverage,
-    JSXFileCoverage,
+    ComponentFileCoverage,
     totalCoverage,
     completelyCoveredFiles,
   } = data;
@@ -19,7 +19,7 @@ const printOutputSummary = (data) => {
   console.log('Note: A detailed json is generated in doc-coverage directory');
 
   console.log(
-    'Note: Component Files refer to JSX files for react and .vue/.svelte files for vue and svelte respectively'
+    'Note: Component Files refer to Component files for react and .vue/.svelte files for vue and svelte respectively'
   );
 
   generateConsoleTable('JsDoc Coverage', [
@@ -44,33 +44,33 @@ const printOutputSummary = (data) => {
     {
       myId: 'totalComponents',
       title: 'Total Component Files',
-      value: JSXFileCoverage.totalComponents,
+      value: ComponentFileCoverage.totalComponents,
     },
 
     {
       myId: 'componentsWithStoriesOrPropTypes',
       title: 'Fully Documented Component Files',
-      value: JSXFileCoverage.componentsWithStoriesOrPropTypes,
+      value: ComponentFileCoverage.componentsWithStoriesOrPropTypes,
     },
     {
       myId: 'componentsWithStories',
       title: 'Components with stories',
-      value: JSXFileCoverage.componentsWithStories,
+      value: ComponentFileCoverage.componentsWithStories,
     },
     {
       myId: 'storyBookCoveragePercent',
       title: 'Storybook Coverage percent',
-      value: `${JSXFileCoverage.storyBookCoveragePercent}%`,
+      value: `${ComponentFileCoverage.storyBookCoveragePercent}%`,
     },
     {
       myId: 'fullyDocumentedFileCoverage',
       title: 'Fully documented files / Total files',
-      value: `${JSXFileCoverage.storyBookOrPropTypesCoveragePercent}%`,
+      value: `${ComponentFileCoverage.storyBookOrPropTypesCoveragePercent}%`,
     },
     {
       myId: 'propTypesCoverage',
       title: 'num of prop types / total props',
-      value: `${JSXFileCoverage.propTypesCoverage}%`,
+      value: `${ComponentFileCoverage.propTypesCoverage}%`,
     },
   ]);
 

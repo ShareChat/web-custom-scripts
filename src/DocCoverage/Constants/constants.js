@@ -17,6 +17,7 @@ const expressionTypes = {
   LOGICAL_EXPRESSION: 'LogicalExpression',
   CALL_EXPRESSION: 'CallExpression',
   OBJECT_EXPRESSION: 'ObjectExpression',
+  EXPRESSION_STATEMENT: 'ExpressionStatement',
 };
 
 const astConstants = {

@@ -150,7 +150,7 @@ class PropTypesCoverageReact {
     const populatePropTypesArray = (astObj) => {
       astObj.body.forEach((scope) => {
         if (
-          scope.type === 'ExpressionStatement' &&
+          scope.type === expressionTypes.EXPRESSION_STATEMENT &&
           scope.expression.left?.property?.name === astConstants.PROP_TYPES
         ) {
           hasPropTypes = true;

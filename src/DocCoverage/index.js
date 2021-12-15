@@ -122,11 +122,11 @@ class DocumentationCoverage {
     };
 
     walk(config.source, (filePath) => {
-      let isJSXFile = false;
-      // Find total scopes(expectCount) and documented scopes(actualCount) in non JSX files
+      let isComponentFile = false;
+      // Find total scopes(expectCount) and documented scopes(actualCount) in non Component files
       if (
         !isExcluded(filePath, config.excludedPaths) &&
-        !isExcluded(filePath, config.foldersWithJSXFiles)
+        !isExcluded(filePath, config.foldersWithComponentFiles)
       ) {
         // generates ast doc
         const response = generateAstWithComments(filePath, config);
@@ -144,13 +144,16 @@ class DocumentationCoverage {
         config.source !== './' ||
         !isExcluded(filePath, config.excludedPaths)
       ) {
-        // Populate components Map with all JSX file paths
-        config.foldersWithJSXFiles.forEach((folder) => {
+        // Populate components Map with all Component file paths
+        config.foldersWithComponentFiles.forEach((folder) => {
           if (filePath.match(`/${folder}/`)) {
-            isJSXFile = true;
+            isComponentFile = true;
           }
         });
-        if (isJSXFile && !isExcluded(filePath, config.excludedComponentPaths)) {
+        if (
+          isComponentFile &&
+          !isExcluded(filePath, config.excludedComponentPaths)
+        ) {
           const astObject = generateAst(filePath, config);
           if (astObject !== null) {
             componentsMap[filePath] = populateComponentsMap(astObject);
@@ -202,7 +205,7 @@ class DocumentationCoverage {
         actualCount,
         coveragePercent: getCoveragePercentage(actualCount, expectedCount),
       },
-      JSXFileCoverage: {
+      ComponentFileCoverage: {
         totalComponents,
         componentsWithStories,
         componentsWithStoriesOrPropTypes,
@@ -231,7 +234,7 @@ class DocumentationCoverage {
       },
     };
 
-    generateReportFile(astHash, componentsMap, summary);
+    generateReportFile(astHash, config.framework, componentsMap, summary);
     printOutputSummary(summary);
   }
 }
