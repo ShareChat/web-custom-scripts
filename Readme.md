@@ -48,8 +48,8 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
 	"excludedPaths": ["/assets/", "/components/","/containers/", "/__test__/", "/config./"],
 	"excludedComponentPaths": ["/__test__/", "^((?!index.js).)*$"],
 	"foldersWithComponentFiles": ["components", "containers"],
-	"storiesFolderPath": "./stories",
-  "framework": "svelte"
+  "framework": "svelte",
+	"storiesFolderPath": "./stories"
 }
 
 ```
@@ -107,7 +107,7 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
  Apart from giving the same information as the tables in console it has 2 extra keys -
  1. fileWiseCoverageJSDoc - Object with file path as the key.
     Example:
-    "/Users/shivanisehgal/Desktop/pwa-sharechat/src/firebase-messaging-amp.sw.js": {
+    "path-to-app/src/app.js": {
             "funcCoverage": {
                 "urlB64ToUint8Array": false,
                 "onMessageReceivedSubscriptionState": true,
@@ -121,7 +121,7 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
 
  2. fileWiseCoverageComponent - Object with file path as the key.
     Example:
-    "/Users/shivanisehgal/Desktop/pwa-sharechat/src/components/molecules/IndefiniteLoading/index.js": {
+    "path-to-app/src/index.js": {
             "hasStory": false,
             "hasAllPropTypes": false,
             "componentType": "Functional",
