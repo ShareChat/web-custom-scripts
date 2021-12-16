@@ -48,7 +48,7 @@ Config refers to the json that need to be added in .doccoverage.json file. Follo
 	"excludedPaths": ["/assets/", "/components/","/containers/", "/__test__/", "/config./"],
 	"excludedComponentPaths": ["/__test__/", "^((?!index.js).)*$"],
 	"foldersWithComponentFiles": ["components", "containers"],
-  "framework": "svelte",
+  	"framework": "svelte",
 	"storiesFolderPath": "./stories"
 }
 
