@@ -4,16 +4,11 @@
 
 ```
 
-To be published on npm for now follow the following steps to run -
-
-  1. clone the repo - git clone git@github.com:ShareChat/web-custom-scripts.git
-  2. cd web-custom-scripts
-  3. npm install . -g (If getting permission errors try -> sudo npm install . -g). Now the script can be used globally.
-  4. Go to the project directory for which coverage is to be calculated.
-  5. Create a .doccoverage.json file in the root of the project.
-  6. For help on the config file created in step 5, refer 'Config Help' section
-  7. Run the command "doc" in the terminal in root directory to get coverage.
-  8. A folder called doc-coverage is created in the root. It contains a detailed coverage report.
+  1. npm i web-custom-scripts
+  2. Create a .doccoverage.json file in the root of the project.
+  3. For help on the config file created in step 5, refer 'Config Help' section
+  4. Run the command "./node_modules/.bin/doc" in the terminal in root directory to get coverage.
+  5. A folder called doc-coverage is created in the root. It contains a detailed coverage report.
 
 ```
 

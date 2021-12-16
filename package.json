@@ -1,6 +1,6 @@
 {
   "name": "web-custom-scripts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "custom scripts for web",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "url": "git+https://github.com/ShareChat/web-custom-scripts.git"
   },
   "bin": {
-    "doc": "./bin/docCoverage.js"
+    "doc2": "./bin/docCoverage.js"
   },
   "author": "",
   "license": "ISC",
