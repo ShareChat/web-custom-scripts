@@ -23,7 +23,7 @@ const expressionTypes = {
 const astConstants = {
   PROPS: 'props',
   PROP_TYPES: 'propTypes',
-  PROPERTY_DEEFINITION: 'PropertyDefinition',
+  PROPERTY_DEFINITION: 'PropertyDefinition',
   INIT: 'init',
 };
 
