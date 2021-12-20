@@ -54,10 +54,10 @@ class PropTypesCoverageReact {
           );
         }
       } else if (expressionTypesArr.includes(grandParentValue.type)) {
-        if (parentValue.property.name !== astConstants.PROPS) {
-          uniquePush(propsArr, parentValue.property.name);
+        if (parentValue.property?.name !== astConstants.PROPS) {
+          uniquePush(propsArr, parentValue.property?.name);
         } else {
-          uniquePush(propsArr, grandParentValue.property.name);
+          uniquePush(propsArr, grandParentValue.property?.name);
         }
       } else if (grandParentValue.property) {
         uniquePush(propsArr, grandParentValue.property.name);
@@ -106,10 +106,14 @@ class PropTypesCoverageReact {
               );
             }
           });
-        } else {
+        } else if (scope.declarations[0].init.params) {
           // destructured
-          scope.declarations[0].init.params?.[0].properties.forEach((p) =>
+          scope.declarations[0].init.params[0].properties.forEach((p) =>
             uniquePush(propsArr, p.key?.name)
+          );
+        } else if (scope.declarations[0].init.left) {
+          scope.declarations[0].init.left.left?.params?.[0].properties.forEach(
+            (p) => uniquePush(propsArr, p.key?.name)
           );
         }
         getAncestors([], scope, astConstants.PROPS, populatePropsArray);

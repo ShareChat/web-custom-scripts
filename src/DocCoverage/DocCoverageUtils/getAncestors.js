@@ -13,11 +13,7 @@ const getAncestors = (path, obj, value, callback) => {
         path.push({ [key]: val });
         getAncestors(path, val, value, callback);
         path.pop();
-      } else if (
-        Array.isArray(val) &&
-        key !== 'params' &&
-        key !== 'arguments'
-      ) {
+      } else if (Array.isArray(val) && key !== 'params') {
         val.forEach((v, i) => {
           if (typeof v === 'object' && val !== null) {
             path.push({ [`${key}[${i}]`]: v });
