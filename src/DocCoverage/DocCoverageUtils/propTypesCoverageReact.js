@@ -166,22 +166,40 @@ class PropTypesCoverageReact {
       });
     };
 
-    getAncestors([], ast, declarationTypes.CLASS_DECLARATION, () => {
+    /**
+     * reurns a new ast body after removing styled components
+     * @param {Array} ancestors
+     * @returns {object} newAstBody
+     */
+    const removeStyledComponents = (astObj) => {
+      const astBody = [];
+      astObj.body.forEach((scope) => {
+        if (scope.declarations?.[0].init?.tag?.object?.name !== 'styled') {
+          astBody.push(scope);
+        }
+      });
+      return astBody;
+    };
+
+    const updatedAstBody = removeStyledComponents(ast);
+    const newAst = { ...ast, body: updatedAstBody };
+
+    getAncestors([], newAst, declarationTypes.CLASS_DECLARATION, () => {
       isClassComponent = true;
-      getAncestors([], ast, astConstants.PROPS, populatePropsArray);
+      getAncestors([], newAst, astConstants.PROPS, populatePropsArray);
       getAncestors(
         [],
-        ast,
+        newAst,
         astConstants.PROP_TYPES,
         populatePropTypesArrayStatic
       );
-      populatePropTypesArray(ast);
+      populatePropTypesArray(newAst);
     });
 
     if (!isClassComponent) {
-      populatePropTypesArray(ast);
+      populatePropTypesArray(newAst);
       if (hasPropTypes) {
-        ast.body.forEach((scope) => {
+        newAst.body.forEach((scope) => {
           if (
             scope.type === declarationTypes.EXPORT_DEFAULT_DECLARATION &&
             scope.declaration.id?.name === compName
