@@ -70,7 +70,7 @@ const printOutputSummary = (data) => {
     {
       myId: 'propTypesCoverage',
       title: 'num of prop types / total props',
-      value: `${ComponentFileCoverage.propTypesCoverage}%`,
+      value: `${ComponentFileCoverage.propTypesCoveragePercent}%`,
     },
   ]);
 
@@ -90,7 +90,7 @@ const printOutputSummary = (data) => {
       {
         myId: 'coveragePercentage',
         title: 'Coverage Percentage',
-        value: `${completelyCoveredFiles.totalCoveragePercent}`,
+        value: `${completelyCoveredFiles.totalCoveragePercent}%`,
       },
     ]
   );
@@ -111,7 +111,7 @@ const printOutputSummary = (data) => {
       {
         myId: 'coveragePercentage',
         title: 'Coverage Percentage',
-        value: `${totalCoverage.totalCoveragePercent}`,
+        value: `${totalCoverage.totalCoveragePercent}%`,
       },
     ]
   );

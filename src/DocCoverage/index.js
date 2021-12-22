@@ -211,7 +211,7 @@ class DocumentationCoverage {
         componentsWithStoriesOrPropTypes,
         storyBookCoveragePercent,
         storyBookOrPropTypesCoveragePercent,
-        propTypesCoverage: getCoveragePercentage(
+        propTypesCoveragePercent: getCoveragePercentage(
           numOfPropTypesDefined,
           numOfProps
         ),

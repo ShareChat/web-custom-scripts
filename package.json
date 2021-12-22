@@ -1,6 +1,6 @@
 {
   "name": "web-custom-scripts",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "custom scripts for web",
   "main": "index.js",
   "scripts": {
