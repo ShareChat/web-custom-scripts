@@ -99,7 +99,7 @@ class PropTypesCoverageReact {
           scope.declarations[0].init.body.body.forEach((s) => {
             if (
               s.type === declarationTypes.VARIABLE_DECLARATION &&
-              s.declarations[0].init.name === astConstants.PROPS
+              s.declarations?.[0]?.init?.name === astConstants.PROPS
             ) {
               s.declarations[0].id.properties.forEach((p) =>
                 uniquePush(propsArr, p.key?.name)
