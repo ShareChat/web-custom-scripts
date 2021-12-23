@@ -6,7 +6,7 @@ const generateReportFile = (astHash, framework, componentsCoverage, data) => {
   }`;
   const output = {
     ...data,
-    fileWiseCoverageJSDOC: astHash,
+    fileWiseCoverageJSFiles: astHash,
     [key]: componentsCoverage,
   };
 
