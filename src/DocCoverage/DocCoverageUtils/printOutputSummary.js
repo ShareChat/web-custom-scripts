@@ -17,7 +17,7 @@ const printOutputSummary = (data) => {
     'Note: Component Files refer to Component files for react and .vue/.svelte files for vue and svelte respectively'
   );
 
-  generateConsoleTable('JsDoc Coverage', [
+  generateConsoleTable('Coverage of Pure JS Files', [
     {
       myId: 'totalScope',
       title: 'Total Scopes',
@@ -35,7 +35,7 @@ const printOutputSummary = (data) => {
     },
   ]);
 
-  generateConsoleTable('Components File Coverage', [
+  generateConsoleTable('Coverage of Component Files', [
     {
       myId: 'totalComponents',
       title: 'Total Component Files',
@@ -70,7 +70,7 @@ const printOutputSummary = (data) => {
   ]);
 
   generateConsoleTable(
-    'Total Coverage - combined score of JSDoc and Component Files',
+    'Total Coverage - combined score of Pure JS and Component Files',
     [
       {
         myId: 'JSFilesWithFullyDocumented',

@@ -19,7 +19,7 @@
 Config refers to the json that need to be added in .doccoverage.json file. Following are the available keys with description.
 
   1. source - Path to the source folder.
-  2. excludedPaths - Array of Path regex to be ignored while calculating JSDoc Coverage.
+  2. excludedPaths - Array of Path regex to be ignored while calculating Coverage of the pure JS Files.
   3. excludedComponentPaths - Array of Path regex to be ignored while calculating Component File Coverage(inside components folder).
    * Example - if only index files are to be considered for stories, add "^((?!index.js).)*$" in the array. This ignores all files except index.
   4. foldersWithComponentFiles - Array of folder names containing all UI components.
@@ -85,7 +85,7 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
 
    We get 3 tables in the console -
 
-   1. JSDoc Coverage - For Non Component files. The script looks for leading JSDoc comments for all top level blocks of a file.
+   1. JS Files Coverage - For Non Component files. The script looks for leading documentation comments for all top level blocks of a file.
       ( 1 scope = 1 top level block/function )
 
    2. Component File Coverage - A Component File is considered fully documented if it is either imported in atleast one '.stories' file or has prop types defined.
@@ -94,7 +94,7 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
         2. Storybook Coverage - Components with stories / Total Components
 	      3. PropTypes Coverage - Num of prop types / Total Props
 
-   3.  Total Coverage - Combined Score of JSDoc and each of the three Component Scores.
+3.  Total Coverage - Combined Score of JS Files and each of the three Component Scores.
 
 ```
 
@@ -104,7 +104,7 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
  A file called docCoverageReport.json is created under a directory called doc-coverage which contains the file wise coverage.
 
  Apart from giving the same information as the tables in console it has 2 extra keys -
- 1. fileWiseCoverageJSDoc - Object with file path as the key.
+ 1. fileWiseCoverageJSFiles - Object with file path as the key.
     Example:
     "path-to-app/src/app.js": {
             "funcCoverage": {
@@ -118,7 +118,7 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
             "fileCoverage": "83.33%"
         },
 
- 2. fileWiseCoverageComponent - Object with file path as the key.
+ 2. fileWiseCoverageJSX/fileWiseCoverageVue/fileWiseCoverageSvelte - Object with file path as the key.
     Example:
     "path-to-app/src/index.js": {
             "hasStory": false,
