@@ -8,12 +8,7 @@ const generateConsoleTable = (title, data) => {
 };
 
 const printOutputSummary = (data) => {
-  const {
-    jsdocCoverage,
-    ComponentFileCoverage,
-    totalCoverage,
-    completelyCoveredFiles,
-  } = data;
+  const { jsdocCoverage, ComponentFileCoverage, totalCoverage } = data;
 
   console.log('\n###########################################################');
   console.log('Note: A detailed json is generated in doc-coverage directory');
@@ -75,43 +70,22 @@ const printOutputSummary = (data) => {
   ]);
 
   generateConsoleTable(
-    'Completely Covered Files - combined score of JSDoc and Component Files(Fully Covered Files)',
+    'Total Coverage - combined score of JSDoc and Component Files',
     [
       {
-        myId: 'numOfScopes',
-        title: 'Total Scopes',
-        value: completelyCoveredFiles.totalExpectedCount,
+        myId: 'JSFilesWithFullyDocumented',
+        title: 'JS Files + Fully Documented Components',
+        value: `${totalCoverage.jsDocWithFullyDoc}%`,
       },
       {
-        myId: 'numOfDocumentedScopes',
-        title: 'Documented Scopes',
-        value: completelyCoveredFiles.totalActualCount,
+        myId: 'JSFilesWithStorybook',
+        title: 'JS Files + Components with Stories',
+        value: `${totalCoverage.jsDocWithStorybook}%`,
       },
       {
-        myId: 'coveragePercentage',
-        title: 'Coverage Percentage',
-        value: `${completelyCoveredFiles.totalCoveragePercent}%`,
-      },
-    ]
-  );
-
-  generateConsoleTable(
-    'Total Coverage - combined score of JSDoc and Component Files(PropTypes Coverage)',
-    [
-      {
-        myId: 'numOfScopes',
-        title: 'Total Scopes',
-        value: totalCoverage.totalExpectedCount,
-      },
-      {
-        myId: 'numOfDocumentedScopes',
-        title: 'Documented Scopes',
-        value: totalCoverage.totalActualCount,
-      },
-      {
-        myId: 'coveragePercentage',
-        title: 'Coverage Percentage',
-        value: `${totalCoverage.totalCoveragePercent}%`,
+        myId: 'JSFilesWithPropTypes',
+        title: 'JS Files + Prop Types Coverage',
+        value: `${totalCoverage.jsDocWithPropTypesCoverage}%`,
       },
     ]
   );

@@ -217,19 +217,17 @@ class DocumentationCoverage {
         ),
       },
       totalCoverage: {
-        totalExpectedCount: numOfProps + expectedCount,
-        totalActualCount: numOfPropTypesDefined + actualCount,
-        totalCoveragePercent: getCoveragePercentage(
-          numOfPropTypesDefined + actualCount,
-          numOfProps + expectedCount
-        ),
-      },
-      completelyCoveredFiles: {
-        totalExpectedCount: totalComponents + expectedCount,
-        totalActualCount: componentsWithStoriesOrPropTypes + actualCount,
-        totalCoveragePercent: getCoveragePercentage(
+        jsDocWithFullyDoc: getCoveragePercentage(
           componentsWithStoriesOrPropTypes + actualCount,
           totalComponents + expectedCount
+        ),
+        jsDocWithStorybook: getCoveragePercentage(
+          storyBookCoveragePercent + actualCount,
+          totalComponents + expectedCount
+        ),
+        jsDocWithPropTypesCoverage: getCoveragePercentage(
+          numOfPropTypesDefined + actualCount,
+          numOfProps + expectedCount
         ),
       },
     };
