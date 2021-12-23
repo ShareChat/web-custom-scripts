@@ -83,19 +83,18 @@ If no config is provided, the following is used as the default config
 Refer the following image link for example.
 https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-914b-0a1ae5b7b3c8.png
 
-   We get 4 tables in the console -
+   We get 3 tables in the console -
 
    1. JSDoc Coverage - For Non Component files. The script looks for leading JSDoc comments for all top level blocks of a file.
       ( 1 scope = 1 top level block/function )
 
    2. Component File Coverage - A Component File is considered fully documented if it is either imported in atleast one '.stories' file or has prop types defined.
-      We get 2 scores in this table -
-      	1. Fully Covered Files - Fully documented files / Total files
-	2. PropTypes Coverage - num of prop types / total props
+      We get 3 scores in this table -
+      	1. Fully Covered Components - Fully documented Components / Total Components
+        2. Storybook Coverage - Components with stories / Total Components
+	      3. PropTypes Coverage - Num of prop types / Total Props
 
-   3. Completely Covered File - combined score of JSDoc and Component (Fully Covered Files)
-
-   4. Total Coverage - combined score of JSDoc and Component (PropTypes Coverage)
+   3.  Total Coverage - Combined Score of JSDoc and each of the three Component Scores.
 
 ```
 
