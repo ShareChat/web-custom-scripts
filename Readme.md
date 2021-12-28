@@ -131,7 +131,7 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
                 "timedOut",
                 "pastDelay"
             ],
-            "coverage": 25
+            "coverage": "25%"
     }
 
 

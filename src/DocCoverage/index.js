@@ -79,12 +79,14 @@ class DocumentationCoverage {
             hasStory: false,
             hasAllPropTypes: missingPropTypesLength === 0,
             missingPropTypes,
-            coverage: totalPropsLength
-              ? getCoveragePercentage(
-                  totalPropsLength - missingPropTypesLength,
-                  totalPropsLength
-                )
-              : 0,
+            coverage: `${
+              totalPropsLength
+                ? getCoveragePercentage(
+                    totalPropsLength - missingPropTypesLength,
+                    totalPropsLength
+                  )
+                : 0
+            }%`,
           };
         }
         case frameworks.VUE: {
@@ -94,7 +96,7 @@ class DocumentationCoverage {
             hasStory: false,
             hasAllPropTypes: hasPropTypesVue,
             missingPropTypes: hasPropTypesVue ? [] : 'No proptypes found',
-            coverage: hasPropTypesVue ? 100 : 0,
+            coverage: `${hasPropTypesVue ? 100 : 0}%`,
           };
         }
         default: {
@@ -110,12 +112,14 @@ class DocumentationCoverage {
               totalPropsLength && totalPropsLength !== missingPropTypesLength
                 ? missingPropTypes
                 : 'No PropTypes Found',
-            coverage: totalPropsLength
-              ? getCoveragePercentage(
-                  totalPropsLength - missingPropTypesLength,
-                  totalPropsLength
-                )
-              : 0,
+            coverage: `${
+              totalPropsLength
+                ? getCoveragePercentage(
+                    totalPropsLength - missingPropTypesLength,
+                    totalPropsLength
+                  )
+                : 0
+            }%`,
           };
         }
       }
