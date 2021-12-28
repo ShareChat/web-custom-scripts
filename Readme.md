@@ -1,5 +1,7 @@
 # Documentation Coverage Plugin
 
+Node Version required: 14 or above
+
 ## Install
 
 ```
@@ -138,9 +140,10 @@ https://user-images.githubusercontent.com/92925973/142974147-12e32043-8102-4b81-
 ## Important Note
 
 ```
-To get an accurate proptypes coverage, avoid rest operator for props where ever possible.
+To get an accurate proptypes coverage, destructure the props.
 Currently this syntax is not identified by the parser => {props.something}.
+Instead use the following syntax
+const {x,y,z} = props;
 
-The curly braces used to evaluate a JavaScript expression are read as an object by the parser
-and hence is not able to give us the property name.
+
 ```
