@@ -6,7 +6,7 @@ Node Version required: 14 or above
 
 ```
 
-  1. npm i web-custom-scripts
+  1. npm i doc-coverage
   2. Create a .doccoverage.json file in the root of the project.
   3. For help on the config file created in step 5, refer 'Config Help' section
   4. Run the command "./node_modules/.bin/doc" in the terminal in root directory to get coverage.
