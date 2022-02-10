@@ -1,6 +1,6 @@
 {
   "name": "doc-coverage",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "custom scripts for web",
   "main": "index.js",
   "scripts": {
