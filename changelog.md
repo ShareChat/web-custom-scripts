@@ -1,3 +1,7 @@
+# 1.1.2 / 2022-04-27
+
+- Fixed the error - "TypeError: Do not know how to serialize a BigInt"
+
 # 1.1.0 / 2022-03-20
 
 - Add Changelog.md
