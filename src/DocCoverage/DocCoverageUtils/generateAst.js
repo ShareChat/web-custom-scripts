@@ -2,6 +2,9 @@ const fs = require('fs-extra');
 const acornLoose = require('acorn-loose');
 const isIgnored = require('./checkIfIgnored');
 
+// eslint-disable-next-line no-extend-native
+BigInt.prototype.toJSON = () => this.toString();
+
 /**
  * parses JS and generates Abstract Syntax Tree object
  * @returns {Object}
