@@ -106,7 +106,10 @@ class PropTypesCoverageReact {
               );
             }
           });
-        } else if (scope.declarations[0].init.params) {
+        } else if (
+          scope.declarations[0].init.params &&
+          scope.declarations[0].init.params[0]
+        ) {
           // destructured
           scope.declarations[0].init.params[0].properties.forEach((p) =>
             uniquePush(propsArr, p.key?.name)
