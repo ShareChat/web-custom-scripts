@@ -1,3 +1,8 @@
+# 1.1.4 / 2022-09-22
+
+- Fixed a bug for react coverage - "TypeError: Cannot read property 'properties' of undefined
+  at populatePropsArrayFunctionalComp"
+
 # 1.1.2 / 2022-04-27
 
 - Fixed the error - "TypeError: Do not know how to serialize a BigInt"
