@@ -47,7 +47,7 @@ class PropTypesCoverageReact {
       ];
       if (parentKey === astConstants.INIT) {
         if (grandParentValue.id.name) {
-          uniquePush(propsArr, grandParentValue.id.name);
+          // uniquePush(propsArr, grandParentValue.id.name);
         } else {
           grandParentValue.id.properties.forEach((p) =>
             uniquePush(propsArr, p.key?.name || p.value?.name)
