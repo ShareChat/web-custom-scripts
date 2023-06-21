@@ -104,21 +104,23 @@ class DocumentationCoverage {
           numOfPropTypesDefined += totalPropsLength - missingPropTypesLength;
           return {
             hasStory: false,
+            totalPropCount: totalPropsLength,
             hasAllPropTypes: totalPropsLength
               ? missingPropTypesLength === 0
-              : false,
+              : true,
+            missingPropCount: missingPropTypesLength,
             componentType: isClassComponent ? 'Class Based' : 'Functional',
             missingPropTypes:
               totalPropsLength && totalPropsLength !== missingPropTypesLength
                 ? missingPropTypes
-                : 'No PropTypes Found',
+                : [],
             coverage: `${
               totalPropsLength
                 ? getCoveragePercentage(
                     totalPropsLength - missingPropTypesLength,
                     totalPropsLength
                   )
-                : 0
+                : 100
             }%`,
           };
         }
